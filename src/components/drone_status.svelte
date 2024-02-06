@@ -5,11 +5,13 @@
     import * as Cesium from "cesium";
 
     let drone = null;
+    let intervalInstance = null;
 
     onMount(() => {
-        setInterval(() => {
-            getDroneStatus();
-        }, API_CALL_INTERVAL);
+        console.log(intervalInstance);
+        if (intervalInstance === null) {
+            intervalInstance = setInterval(getDroneStatus, API_CALL_INTERVAL);
+        }
     });
 
     let droneStatus = {
