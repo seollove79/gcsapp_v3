@@ -8,9 +8,8 @@
     let intervalInstance = null;
 
     onMount(() => {
-        console.log(intervalInstance);
         if (intervalInstance === null) {
-            intervalInstance = setInterval(getDroneStatus, API_CALL_INTERVAL);
+            intervalInstance = setInterval(getDroneStatus, $API_CALL_INTERVAL);
         }
     });
 
@@ -110,14 +109,12 @@
 
     function viewDrone(){
         if (drone != null) {
-            console.log("drone update");
             let position = Cesium.Cartesian3.fromDegrees(droneStatus.lng, droneStatus.lat, droneStatus.slAlt);
             let hpr = new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(droneStatus.yaw - $DRONE_YAW_OFFSET), droneStatus.pitch, droneStatus.roll);
             let orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
             drone.position = position;
             drone.orientation = orientation;
         } else {
-            console.log("drone add");
             drone = $MAP_VIEWER.entities.add({
                 name: "Drone",
                 position: Cesium.Cartesian3.fromDegrees(droneStatus.lng, droneStatus.lat, droneStatus.slAlt), // 드론의 초기 위치 (경도, 위도, 높이)
