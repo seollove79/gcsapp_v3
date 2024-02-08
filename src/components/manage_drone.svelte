@@ -260,8 +260,8 @@
         position: fixed; /* 고정된 위치 */
         top: 135px; /* 상단에서 0px의 위치 */
         right: 10px; /* 오른쪽에서 0px의 위치 */
-        z-index: 1000; /* 다른 요소들 위에 표시되도록 z-index 설정 */
         display: flex;
+        z-index:1;
         flex-direction: column;
         gap:10px;
     }

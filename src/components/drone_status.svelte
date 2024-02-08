@@ -1,6 +1,19 @@
 <script>
-    import { onMount, onDestroy, beforeUpdate, afterUpdate, tick } from 'svelte'
-    import { DRONEKIT_API, MAP_VIEWER, DRONE_YAW_OFFSET, DRONE_MODEL_SCALE, API_CALL_INTERVAL, DRONE_ALTITUDE_OFFSET } from "../store";
+    import {
+        onMount,
+        onDestroy,
+        beforeUpdate,
+        afterUpdate,
+        tick,
+    } from "svelte";
+    import {
+        DRONEKIT_API,
+        MAP_VIEWER,
+        DRONE_YAW_OFFSET,
+        DRONE_MODEL_SCALE,
+        API_CALL_INTERVAL,
+        DRONE_ALTITUDE_OFFSET,
+    } from "../store";
     export let droneID;
     import * as Cesium from "cesium";
 
@@ -31,6 +44,8 @@
         pitch: 0,
         yaw: 0,
     };
+
+    let targetAltitude = 10;
 
     function getDroneStatus() {
         fetch($DRONEKIT_API + "drone_status/" + encodeURIComponent(droneID), {
@@ -68,14 +83,14 @@
                 }
 
                 let ekf_ok = data["ekf_ok"];
-                if (ekf_ok === "True") {
+                if (ekf_ok === true) {
                     ekf_ok = "EKF OK";
                 } else {
                     ekf_ok = "EKF Error";
                 }
 
                 let armed = data["Armed"];
-                if (armed === "True") {
+                if (armed === true) {
                     armed = "ARMED";
                 } else {
                     armed = "DISARMED";
@@ -107,8 +122,14 @@
             });
     }
 
-    function armDrone() {
-        fetch($DRONEKIT_API + "arm_drone/" + encodeURIComponent(droneID), {
+    function armOrDisarmDrone() {
+        let action = null;
+        if (droneStatus.armed === "ARMED") {
+            action = "disarm_drone";
+        } else {
+            action = "arm_drone";
+        }
+        fetch($DRONEKIT_API + action + "/" + encodeURIComponent(droneID), {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -116,107 +137,156 @@
         })
             .then((response) => response.json())
             .then((data) => {
-                let voltage = data["Battery"].split(",")[0];
-                voltage = voltage.split("=")[1];
-
-                let level = data["Battery"].split(",")[2];
-                level = level.split("=")[1];
-
-                let gps = data["GPS"].split(",")[1];
-                gps = gps.split("=")[1];
-
-                let gpsFix = data["GPS"].split(",")[0];
-                gpsFix = gpsFix.split("=")[1];
-                switch (gpsFix) {
-                    case "0":
-                        gpsFix = "No";
-                        break;
-                    case "1":
-                        gpsFix = "No";
-                        break;
-                    case "2":
-                        gpsFix = "2D";
-                        break;
-                    case "3":
-                        gpsFix = "3D";
-                        break;
-                }
-
-                let ekf_ok = data["ekf_ok"];
-                if (ekf_ok === "True") {
-                    ekf_ok = "EKF OK";
-                } else {
-                    ekf_ok = "EKF Error";
-                }
-
-                let armed = data["Armed"];
-                if (armed === "True") {
-                    armed = "ARMED";
-                } else {
-                    armed = "DISARMED";
-                }
-
-                droneStatus = {
-                    airSpeed: parseFloat(data["AirSpeed"]).toFixed(2),
-                    groundSpeed: parseFloat(data["GroundSpeed"]).toFixed(2),
-                    voltage: voltage + "V",
-                    level: level + "%",
-                    mode: data["Mode"],
-                    gps: gps,
-                    gpsFix: gpsFix,
-                    armed: armed,
-                    ekf: ekf_ok,
-                    lat: data["Lat"],
-                    lng: data["Lng"],
-                    alt: data["Alt"],
-                    slAlt: data["SL_Alt"],
-                    roll: data["Roll"],
-                    pitch: data["Pitch"],
-                    yaw: data["Yaw"],
-                };
-                droneStatus = droneStatus;
-                viewDrone();
+                console.log(data);
             })
             .catch((error) => {
                 console.error("Error:", error);
             });
     }
 
-    function viewDrone(){
+    function land() {
+        fetch($DRONEKIT_API + "land/" + encodeURIComponent(droneID), {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log(data);
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+            });
+    }
+
+    async function changeFlightMode(newMode) {
+        try {
+            const response = await fetch($DRONEKIT_API + "change_mode/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "drone_id": droneID,
+                    "new_mode": newMode,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('서버 에러: ' + response.statusText);
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+            
+        }
+    }
+
+    function viewDrone() {
         if (drone != null) {
-            let position = Cesium.Cartesian3.fromDegrees(droneStatus.lng, droneStatus.lat, droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET);
-            let hpr = new Cesium.HeadingPitchRoll(Cesium.Math.toRadians(droneStatus.yaw - $DRONE_YAW_OFFSET), droneStatus.pitch, droneStatus.roll);
-            let orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
-
-            // let terrainProvider = Cesium.createWorldTerrain();
-            // $MAP_VIEWER.terrainProvider = terrainProvider;
-            // let cartographicPosition = Cesium.Cartographic.fromDegrees(droneStatus.lng, droneStatus.lat);
-            // Cesium.sampleTerrainMostDetailed(terrainProvider, [cartographicPosition])
-            // .then(function(updatedPositions) {
-            //     // 고도 정보를 출력합니다.
-            //     var height = updatedPositions[0].height;
-            //     console.log('해수면 고도: ' + height + ' 미터');
-            // });
-
-
+            let position = Cesium.Cartesian3.fromDegrees(
+                droneStatus.lng,
+                droneStatus.lat,
+                droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+            );
+            let hpr = new Cesium.HeadingPitchRoll(
+                Cesium.Math.toRadians(droneStatus.yaw - $DRONE_YAW_OFFSET),
+                droneStatus.pitch,
+                droneStatus.roll,
+            );
+            let orientation = Cesium.Transforms.headingPitchRollQuaternion(
+                position,
+                hpr,
+            );
             drone.position = position;
             drone.orientation = orientation;
         } else {
             drone = $MAP_VIEWER.entities.add({
                 name: "Drone",
-                position: Cesium.Cartesian3.fromDegrees(droneStatus.lng, droneStatus.lat, droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET), // 드론의 초기 위치 (경도, 위도, 높이)
+                position: Cesium.Cartesian3.fromDegrees(
+                    droneStatus.lng,
+                    droneStatus.lat,
+                    droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+                ), // 드론의 초기 위치 (경도, 위도, 높이)
                 model: {
                     uri: "/scene.gltf",
                     scale: $DRONE_MODEL_SCALE,
                 },
             });
+
+            // 매 프레임마다 실행되는 리스너 함수 등록
+            // $MAP_VIEWER.scene.preRender.addEventListener(function () {
+            //     var distance = Cesium.Cartesian3.distance(
+            //         $MAP_VIEWER.camera.positionWC,
+            //         drone.position.getValue($MAP_VIEWER.clock.currentTime),
+            //     );
+
+            //     var minDistance = 100; // 최소 거리 (예: 100 미터)
+            //     var scaleIncrement = 0.01; // 거리가 50미터 늘어날 때마다 증가할 스케일 값
+            //     var distanceForScaleIncrement = 50; // 스케일을 증가시키기 위한 거리 단위
+
+            //     if (distance > minDistance) {
+            //         // 거리가 최소 거리보다 클 때, 스케일 조정 로직
+            //         var scaleAdjustment =
+            //             ((distance - minDistance) / distanceForScaleIncrement) *
+            //             scaleIncrement;
+            //         drone.model.scale = $DRONE_MODEL_SCALE + scaleAdjustment;
+            //     } else {
+            //         // 거리가 최소 거리 이하일 때는 기본 스케일 사용
+            //         drone.model.scale = $DRONE_MODEL_SCALE;
+            //     }
+            // });
         }
     }
 
+    async function takeoff() {
+        if (targetAltitude === null || targetAltitude === "") {
+            alert("이륙고도를 입력해주세요.");
+            return;
+        }
+
+        if (targetAltitude < 0) {
+            alert("이륙고도는 0 이상의 숫자로 입력해주세요.");
+            return;
+        }
+
+        try {
+            const response = await fetch($DRONEKIT_API + "takeoff/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "drone_id": droneID,
+                    "target_altitude": targetAltitude.toString(),
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('서버 에러: ' + response.statusText);
+            }
+
+            const data = await response.json();
+            console.log(data);
+
+            if (data.status === "start takeoff") {
+                alert("이륙시작");
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+            
+        }
+
+
     
+    }
 </script>
 
-<div style="width:400px" class="status-layer">
+<div style="width:400px">
     <div class="container">
         <div
             class="row"
@@ -241,16 +311,17 @@
                     <div class="col">Telemetry</div>
                 </div>
                 <div class="row" style="padding:5px 0 5px 0">
-                    <div class="col">{droneStatus.voltage}<br />{droneStatus.level}</div>
-                    <div class="col">{droneStatus.gps}<br />{droneStatus.gpsFix}</div>
+                    <div class="col">
+                        {droneStatus.voltage}<br />{droneStatus.level}
+                    </div>
+                    <div class="col">
+                        {droneStatus.gps}<br />{droneStatus.gpsFix}
+                    </div>
                     <div class="col">99%<br />25%</div>
                 </div>
             </div>
             <div class="container">
-                <div
-                    class="row"
-                    style="padding:5px 0 4px 0;color:yellow"
-                >
+                <div class="row" style="padding:5px 0 4px 0;color:yellow">
                     <div class="col">{droneStatus.armed}</div>
                     <div class="col">{droneStatus.mode}</div>
                     <div class="col">{droneStatus.ekf}</div>
@@ -272,11 +343,13 @@
                             >
                                 <div class="col">고도 (m)</div>
                             </div>
-                            <div
-                                class="row"
-                                style="padding:5px 0 5px 0">
-                                <div class="col">상대고도<br />{droneStatus.alt}</div>
-                                <div class="col">해수면고도<br />{droneStatus.slAlt}</div>
+                            <div class="row" style="padding:5px 0 5px 0">
+                                <div class="col">
+                                    상대고도<br />{droneStatus.alt}
+                                </div>
+                                <div class="col">
+                                    해수면고도<br />{droneStatus.slAlt}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -291,12 +364,13 @@
                             >
                                 <div class="col">속도 (m/s)</div>
                             </div>
-                            <div
-                                class="row"
-                                style="padding:5px 0 5px 0"
-                            >
-                                <div class="col">Air<br />{droneStatus.airSpeed}</div>
-                                <div class="col">Ground<br />{droneStatus.groundSpeed}</div>
+                            <div class="row" style="padding:5px 0 5px 0">
+                                <div class="col">
+                                    Air<br />{droneStatus.airSpeed}
+                                </div>
+                                <div class="col">
+                                    Ground<br />{droneStatus.groundSpeed}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -325,20 +399,27 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">시동/종료</button>
-                    </div>
-                    <div class="col">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            style="width:100%">이륙</button
+                            style="width:100%"
+                            on:click={armOrDisarmDrone}>시동/종료</button
                         >
                     </div>
                     <div class="col">
+                        <div class="contaniner">
+                            <div class="row g-0">
+                                <div class="col"><input type="number" class="form-control" placeholder="이륙고도" bind:value={targetAltitude}></div>
+                                <div class="col"><button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    style="width:100%" on:click={takeoff}>이륙</button></div>
+                            </div>
+                        </div>  
+                    </div>
+                    <div class="col">
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">착륙</button
+                            style="width:100%"
+                            on:click={land}>착륙</button
                         >
                     </div>
                 </div>
@@ -347,21 +428,24 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">LOITER</button
+                            style="width:100%"
+                            on:click={() => changeFlightMode('LOITER')}>LOITER</button
                         >
                     </div>
                     <div class="col">
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">ALT HOLD</button
+                            style="width:100%"
+                            on:click={()=> changeFlightMode('ALT_HOLD')}>ALT HOLD</button
                         >
                     </div>
                     <div class="col">
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">STABILIZE</button
+                            style="width:100%"
+                            on:click={()=> changeFlightMode('STABILIZE')}>STABILIZE</button
                         >
                     </div>
                 </div>
@@ -370,21 +454,19 @@
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">GUIDED</button
+                            style="width:100%"
+                            on:click={()=> changeFlightMode('GUIDED')}>GUIDED</button
                         >
                     </div>
                     <div class="col">
                         <button
                             type="button"
                             class="btn btn-secondary"
-                            style="width:100%">AUTO</button
-                        >
+                            style="width:100%"
+                            on:click={()=> changeFlightMode('AUTO')}>AUTO</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-</style>

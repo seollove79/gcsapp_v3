@@ -18,11 +18,11 @@
 			eval(interactionDensity),
 			false,
 			new vw.CameraPosition(
-				new vw.CoordZ(126.621259, 37.520995, 1000),
+				new vw.CoordZ(126.621259, 37.520995, 500),
 				new vw.Direction(-90, 0, 0),
 			),
 			new vw.CameraPosition(
-				new vw.CoordZ(126.621259, 37.520995, 1000),
+				new vw.CoordZ(126.621259, 37.520995, 500),
 				new vw.Direction(0, -90, 0),
 			),
 		);
