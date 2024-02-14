@@ -116,6 +116,7 @@
                 };
                 droneStatus = droneStatus;
                 viewDrone();
+                moveMap();
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -168,19 +169,17 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    "drone_id": droneID,
-                    "new_mode": newMode,
+                    drone_id: droneID,
+                    new_mode: newMode,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error('서버 에러: ' + response.statusText);
+                throw new Error("서버 에러: " + response.statusText);
             }
-
         } catch (error) {
             console.error("Error:", error);
         } finally {
-            
         }
     }
 
@@ -241,6 +240,67 @@
         }
     }
 
+    function moveMap() {
+        var dronePosition = Cesium.Cartesian3.fromDegrees(
+            droneStatus.lng,
+            droneStatus.lat,
+            droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+        );
+
+        // 드론의 현재 위치를 바라보는 카메라의 orientation 계산
+        var hpr = new Cesium.HeadingPitchRange(
+            Cesium.Math.toRadians(droneStatus.yaw),
+            droneStatus.pitch,
+            5, // 5미터 뒤에서 드론을 바라봄
+        );
+
+        var cameraPosition = $MAP_VIEWER.camera.positionWC;
+        var distance = Cesium.Cartesian3.distance(
+            cameraPosition,
+            dronePosition,
+        );
+
+        // 거리가 10미터 이상 차이가 나면 카메라 이동
+        if (distance > 10) {
+            $MAP_VIEWER.camera.flyTo({
+                destination: dronePosition,
+                orientation: hpr,
+                duration: 2,
+                easingFunction: Cesium.EasingFunction.LINEAR_NONE,
+                complete: function () {
+                    // 카메라가 목적지에 도착한 후, 드론 뒤로 5미터 이동한 위치를 다시 계산하여 카메라를 조정
+                    var offset = new Cesium.Cartesian3(0, 0, 0); // 드론 뒤쪽으로 5미터 이동할 필요한 offset 계산
+                    var droneBackwardPosition = Cesium.Matrix4.multiplyByPoint(
+                        Cesium.Transforms.eastNorthUpToFixedFrame(
+                            dronePosition,
+                        ),
+                        offset,
+                        new Cesium.Cartesian3(),
+                    );
+
+                    $MAP_VIEWER.camera.lookAt(
+                        dronePosition,
+                        new Cesium.HeadingPitchRange(
+                            Cesium.Math.toRadians(droneStatus.yaw),
+                            droneStatus.pitch,
+                            5,
+                        ),
+                    );
+                },
+            });
+        } else {
+            // 카메라가 이미 드론과 가까운 경우, 바로 lookAt을 사용하여 조정
+            $MAP_VIEWER.camera.lookAt(
+                dronePosition,
+                new Cesium.HeadingPitchRange(
+                    Cesium.Math.toRadians(droneStatus.yaw),
+                    droneStatus.pitch,
+                    5,
+                ),
+            );
+        }
+    }
+
     async function takeoff() {
         if (targetAltitude === null || targetAltitude === "") {
             alert("이륙고도를 입력해주세요.");
@@ -259,13 +319,13 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    "drone_id": droneID,
-                    "target_altitude": targetAltitude.toString(),
+                    drone_id: droneID,
+                    target_altitude: targetAltitude.toString(),
                 }),
             });
 
             if (!response.ok) {
-                throw new Error('서버 에러: ' + response.statusText);
+                throw new Error("서버 에러: " + response.statusText);
             }
 
             const data = await response.json();
@@ -274,15 +334,10 @@
             if (data.status === "start takeoff") {
                 alert("이륙시작");
             }
-
         } catch (error) {
             console.error("Error:", error);
         } finally {
-            
         }
-
-
-    
     }
 </script>
 
@@ -406,13 +461,24 @@
                     <div class="col">
                         <div class="contaniner">
                             <div class="row g-0">
-                                <div class="col"><input type="number" class="form-control" placeholder="이륙고도" bind:value={targetAltitude}></div>
-                                <div class="col"><button
-                                    type="button"
-                                    class="btn btn-secondary"
-                                    style="width:100%" on:click={takeoff}>이륙</button></div>
+                                <div class="col">
+                                    <input
+                                        type="number"
+                                        class="form-control"
+                                        placeholder="이륙고도"
+                                        bind:value={targetAltitude}
+                                    />
+                                </div>
+                                <div class="col">
+                                    <button
+                                        type="button"
+                                        class="btn btn-secondary"
+                                        style="width:100%"
+                                        on:click={takeoff}>이륙</button
+                                    >
+                                </div>
                             </div>
-                        </div>  
+                        </div>
                     </div>
                     <div class="col">
                         <button
@@ -429,7 +495,8 @@
                             type="button"
                             class="btn btn-secondary"
                             style="width:100%"
-                            on:click={() => changeFlightMode('LOITER')}>LOITER</button
+                            on:click={() => changeFlightMode("LOITER")}
+                            >LOITER</button
                         >
                     </div>
                     <div class="col">
@@ -437,7 +504,8 @@
                             type="button"
                             class="btn btn-secondary"
                             style="width:100%"
-                            on:click={()=> changeFlightMode('ALT_HOLD')}>ALT HOLD</button
+                            on:click={() => changeFlightMode("ALT_HOLD")}
+                            >ALT HOLD</button
                         >
                     </div>
                     <div class="col">
@@ -445,7 +513,8 @@
                             type="button"
                             class="btn btn-secondary"
                             style="width:100%"
-                            on:click={()=> changeFlightMode('STABILIZE')}>STABILIZE</button
+                            on:click={() => changeFlightMode("STABILIZE")}
+                            >STABILIZE</button
                         >
                     </div>
                 </div>
@@ -455,7 +524,8 @@
                             type="button"
                             class="btn btn-secondary"
                             style="width:100%"
-                            on:click={()=> changeFlightMode('GUIDED')}>GUIDED</button
+                            on:click={() => changeFlightMode("GUIDED")}
+                            >GUIDED</button
                         >
                     </div>
                     <div class="col">
@@ -463,7 +533,17 @@
                             type="button"
                             class="btn btn-secondary"
                             style="width:100%"
-                            on:click={()=> changeFlightMode('AUTO')}>AUTO</button>
+                            on:click={() => changeFlightMode("AUTO")}
+                            >AUTO</button
+                        >
+                    </div>
+                    <div class="col">
+                        <button
+                            type="button"
+                            class="btn btn-secondary"
+                            style="width:100%"
+                            on:click={moveMap}>TEST</button
+                        >
                     </div>
                 </div>
             </div>
