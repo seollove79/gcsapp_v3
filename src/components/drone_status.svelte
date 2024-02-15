@@ -214,29 +214,6 @@
                     scale: $DRONE_MODEL_SCALE,
                 },
             });
-
-            // 매 프레임마다 실행되는 리스너 함수 등록
-            // $MAP_VIEWER.scene.preRender.addEventListener(function () {
-            //     var distance = Cesium.Cartesian3.distance(
-            //         $MAP_VIEWER.camera.positionWC,
-            //         drone.position.getValue($MAP_VIEWER.clock.currentTime),
-            //     );
-
-            //     var minDistance = 100; // 최소 거리 (예: 100 미터)
-            //     var scaleIncrement = 0.01; // 거리가 50미터 늘어날 때마다 증가할 스케일 값
-            //     var distanceForScaleIncrement = 50; // 스케일을 증가시키기 위한 거리 단위
-
-            //     if (distance > minDistance) {
-            //         // 거리가 최소 거리보다 클 때, 스케일 조정 로직
-            //         var scaleAdjustment =
-            //             ((distance - minDistance) / distanceForScaleIncrement) *
-            //             scaleIncrement;
-            //         drone.model.scale = $DRONE_MODEL_SCALE + scaleAdjustment;
-            //     } else {
-            //         // 거리가 최소 거리 이하일 때는 기본 스케일 사용
-            //         drone.model.scale = $DRONE_MODEL_SCALE;
-            //     }
-            // });
         }
     }
 
@@ -251,7 +228,7 @@
         var hpr = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(droneStatus.yaw),
             droneStatus.pitch,
-            5, // 5미터 뒤에서 드론을 바라봄
+            10, // 5미터 뒤에서 드론을 바라봄
         );
 
         var cameraPosition = $MAP_VIEWER.camera.positionWC;
@@ -261,7 +238,7 @@
         );
 
         // 거리가 10미터 이상 차이가 나면 카메라 이동
-        if (distance > 10) {
+        if (distance > 20) {
             $MAP_VIEWER.camera.flyTo({
                 destination: dronePosition,
                 orientation: hpr,
@@ -269,33 +246,24 @@
                 easingFunction: Cesium.EasingFunction.LINEAR_NONE,
                 complete: function () {
                     // 카메라가 목적지에 도착한 후, 드론 뒤로 5미터 이동한 위치를 다시 계산하여 카메라를 조정
-                    var offset = new Cesium.Cartesian3(0, 0, 0); // 드론 뒤쪽으로 5미터 이동할 필요한 offset 계산
-                    var droneBackwardPosition = Cesium.Matrix4.multiplyByPoint(
-                        Cesium.Transforms.eastNorthUpToFixedFrame(
-                            dronePosition,
-                        ),
-                        offset,
-                        new Cesium.Cartesian3(),
-                    );
-
                     $MAP_VIEWER.camera.lookAt(
                         dronePosition,
                         new Cesium.HeadingPitchRange(
                             Cesium.Math.toRadians(droneStatus.yaw),
-                            droneStatus.pitch,
-                            5,
+                            0,
+                            10,
                         ),
                     );
                 },
             });
         } else {
-            // 카메라가 이미 드론과 가까운 경우, 바로 lookAt을 사용하여 조정
+            //카메라가 이미 드론과 가까운 경우, 바로 lookAt을 사용하여 조정
             $MAP_VIEWER.camera.lookAt(
                 dronePosition,
                 new Cesium.HeadingPitchRange(
                     Cesium.Math.toRadians(droneStatus.yaw),
-                    droneStatus.pitch,
-                    5,
+                    0,
+                    10,
                 ),
             );
         }
