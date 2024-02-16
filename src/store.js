@@ -5,6 +5,9 @@ export const DRONEKIT_API = writable(apiUrl)
 let mapViewer = null;
 export const MAP_VIEWER = writable(mapViewer)
 
+let mapHandler = null;
+export const MAP_HANDLER = writable(mapHandler)
+
 let droneYawOffset = 90;
 export const DRONE_YAW_OFFSET = writable(droneYawOffset)
 
@@ -16,3 +19,6 @@ export const DRONE_MODEL_SCALE = writable(droneModelScale)
 
 let apiCallInterval = 500;
 export const API_CALL_INTERVAL = writable(apiCallInterval)
+
+let selectedDrone = null;
+export const SELECTED_DRONE = writable(selectedDrone)

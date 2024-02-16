@@ -1,11 +1,24 @@
 <script>
 	import { onMount } from "svelte";
 	import Top from "./components/top.svelte";
-	import ManageDrone from "./components/manage_drone.svelte";	
-	import { MAP_VIEWER } from "./store";
-	
+	import ManageDrone from "./components/manage_drone.svelte";
+	import {
+		MAP_VIEWER,
+		MAP_HANDLER,
+		SELECTED_DRONE,
+		DRONEKIT_API,
+	} from "./store";
+	import * as Cesium from "cesium";
+
 	let map3d = null;
 	let drone = null;
+
+	let entityManager = {
+		guidedPositionLine: null,
+		guidedPositionMarker: null,
+		waypointLine: [],
+		waypointMarker: [],
+	};
 
 	function vwmap() {
 		let controlDensity = "vw.DensityType.BASIC";
@@ -29,6 +42,127 @@
 
 		map3d = new vw.Map("vmap", mapOptions);
 		$MAP_VIEWER = ws3d.viewer;
+		$MAP_HANDLER = new Cesium.ScreenSpaceEventHandler(
+			$MAP_VIEWER.scene.canvas,
+		);
+
+		$MAP_HANDLER.setInputAction(function (click) {
+			let ray = $MAP_VIEWER.camera.getPickRay(click.position);
+			let cartesian = $MAP_VIEWER.scene.globe.pick(
+				ray,
+				$MAP_VIEWER.scene,
+			);
+
+			if (cartesian) {
+				let cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+				let longitude = Cesium.Math.toDegrees(cartographic.longitude);
+				let latitude = Cesium.Math.toDegrees(cartographic.latitude);
+				let height = cartographic.height;
+
+				let point1 = Cesium.Cartesian3.fromDegrees(
+					longitude,
+					latitude,
+					height,
+				);
+				let point2 = Cesium.Cartesian3.fromDegrees(
+					longitude,
+					latitude,
+					height + 10,
+				);
+
+				let guidedPopup = document.getElementById("guidedPopup");
+
+				guidedPopup.style.display = "block";
+				guidedPopup.style.position = "absolute";
+				guidedPopup.style.bottom =
+					$MAP_VIEWER.canvas.clientHeight - click.position.y + "px";
+				guidedPopup.style.left = click.position.x + "px";
+
+				let btnGotoPoint = document.getElementById("btnGotoPoint");
+
+				btnGotoPoint.onclick = () => {
+					guidedPopup.style.display = "none";
+					if (entityManager.guidedPositionLine != null) {
+						$MAP_VIEWER.entities.remove(entityManager.guidedPositionLine);
+						$MAP_VIEWER.entities.remove(entityManager.guidedPositionMarker);
+					}
+
+					// 선 그리기
+					entityManager.guidedPositionLine = $MAP_VIEWER.entities.add({
+						polyline: {
+							positions: [point1, point2],
+							width: 2,
+							color: Cesium.Color.RED,
+						},
+					});
+
+					entityManager.guidedPositionMarker = $MAP_VIEWER.entities.add({
+						position: point2,
+						point: {
+							pixelSize: 15,
+							color: Cesium.Color.YELLOW,
+						},
+					});
+
+					gotoLocation(longitude, latitude, height);
+				};
+			}
+		}, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+	}
+
+	async function gotoLocation(longitude, latitude, height) {
+		
+
+		console.log($SELECTED_DRONE);
+
+		try {
+			const response = await fetch($DRONEKIT_API + "goto_location/", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					drone_id: $SELECTED_DRONE,
+					longitude: longitude,
+					latitude: latitude,
+					altitude: height,
+				}),
+			});
+
+			if (!response.ok) {
+				throw new Error("서버 에러: " + response.statusText);
+			}
+
+			const data = await response.json();
+			console.log(data);
+
+			// if (data.status === "start takeoff") {
+			// 	alert("이륙시작");
+			// }
+		} catch (error) {
+			console.error("Error:", error);
+		} finally {
+		}
+
+		// fetch(DRONEKIT_API + "goto_location", {
+		// 	method: "POST",
+		// 	headers: {
+		// 		"Content-Type": "application/json",
+		// 	},
+		// 	body: JSON.stringify({
+		// 		longitude: longitude,
+		// 		latitude: latitude,
+		// 		altitude: height,
+		// 	}),
+		// })
+		// 	.then((response) => response.json())
+		// 	.then((data) => {
+		// 		console.log("Success:", data);
+		// 		popupManager.popup1.style.display = "none";
+		// 	})
+		// 	.catch((error) => {
+		// 		console.error("Error:", error);
+		// 	});
 	}
 
 	onMount(async () => {
@@ -42,10 +176,35 @@
 	<ManageDrone />
 </div>
 
+<div id="guidedPopup" class="guidedPopup" style="display:none">
+	<table>
+		<tr>
+			<td width="20" style="background-color: #c2c2c2;"></td>
+			<td style="padding:5px;background-color: white;"
+				><button id="btnGotoPoint">이곳으로 비행</button></td
+			>
+		</tr>
+		<tr>
+			<td width="20" style="background-color: #c2c2c2;"></td>
+			<td style="padding:5px;background-color: white;"
+				><button id="btnGotoPointWithCurrentAlt"
+					>이곳으로 비행(현재고도 유지)</button
+				></td
+			>
+		</tr>
+	</table>
+</div>
+
 <style>
 	.fullscreen-layer {
 		position: relative;
 		width: 100%;
 		height: 100vh;
+	}
+
+	.guidedPopup tr:hover {
+		background-color: #c2c2c2;
+		font-weight: bold;
+		cursor: pointer;
 	}
 </style>

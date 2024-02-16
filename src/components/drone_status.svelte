@@ -120,7 +120,7 @@
                 droneStatus = droneStatus;
                 viewDrone();
                 if (showStatus === true) {
-                    moveMap();
+                    //moveMap();
                 }
             })
             .catch((error) => {
@@ -312,6 +312,7 @@
         } finally {
         }
     }
+    
 </script>
 {#if showStatus === true}
 <div style="width:400px">
@@ -508,14 +509,6 @@
                             style="width:100%"
                             on:click={() => changeFlightMode("AUTO")}
                             >AUTO</button
-                        >
-                    </div>
-                    <div class="col">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            style="width:100%"
-                            on:click={moveMap}>TEST</button
                         >
                     </div>
                 </div>
