@@ -15,6 +15,8 @@
         DRONE_ALTITUDE_OFFSET,
     } from "../store";
     export let droneID;
+    export let showStatus = false;
+
     import * as Cesium from "cesium";
 
     let drone = null;
@@ -261,7 +263,7 @@
             $MAP_VIEWER.camera.lookAt(
                 dronePosition,
                 new Cesium.HeadingPitchRange(
-                    Cesium.Math.toRadians(droneStatus.yaw),
+                    Cesium.Math.toRadians(Math.floor(droneStatus.yaw)),
                     0,
                     10,
                 ),
