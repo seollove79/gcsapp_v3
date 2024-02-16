@@ -1,5 +1,5 @@
 import  { writable } from 'svelte/store'
-let apiUrl = "http://192.168.0.65:8000/"
+let apiUrl = "http://192.168.0.66:8000/"
 export const DRONEKIT_API = writable(apiUrl)
 
 let mapViewer = null;

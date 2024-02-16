@@ -1,3 +1,4 @@
+<svelte:options accessors={true}/>
 <script>
     import {
         onMount,
@@ -15,7 +16,7 @@
         DRONE_ALTITUDE_OFFSET,
     } from "../store";
     export let droneID;
-    export let showStatus = false;
+    export let showStatus;
 
     import * as Cesium from "cesium";
 
@@ -118,7 +119,9 @@
                 };
                 droneStatus = droneStatus;
                 viewDrone();
-                moveMap();
+                if (showStatus === true) {
+                    moveMap();
+                }
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -310,7 +313,7 @@
         }
     }
 </script>
-
+{#if showStatus === true}
 <div style="width:400px">
     <div class="container">
         <div
@@ -520,3 +523,4 @@
         </div>
     </div>
 </div>
+{/if}

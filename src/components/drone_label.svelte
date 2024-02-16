@@ -1,8 +1,9 @@
 <script>
     export let droneID;
+    export let onSelect;
 </script>
 
-<div style="background:rgba(0,0,0,0.7);margin-right:10px">
+<div style="background:rgba(0,0,0,0.7);margin-right:10px" on:click={()=>onSelect(droneID)}>
     <div class="container g-0" style="width:190px;padding:5px">
         <div class="row g-3">
             <div class="col-auto"><img src="/images/q10.jpg" width="55" height="55" alt="drone icon"></div>

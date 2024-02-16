@@ -96,9 +96,25 @@
     }
 
     function addDrone(droneID) {
-        if (!drones.includes(droneID)) {
-            drones.push(droneID);
+        if (!drones.some(drone => drone.droneID === droneID)) {
+            drones.push(
+                {
+                    droneID: droneID,
+                    droneLabel: null,
+                    droneStatus: null,
+                },
+            );
             drones = drones;
+        }
+    }
+
+    function selectDrone(droneID) {
+        let drone = drones.find(drone => drone.droneID === droneID);
+        if (drone.droneStatus.showStatus) {
+            drone.droneStatus.showStatus = false;
+        } else {
+            drones.forEach(drone => drone.droneStatus.showStatus = false);
+            drone.droneStatus.showStatus = true;
         }
     }
 
@@ -109,7 +125,7 @@
         <div class="row g-0">
             <div class="col d-flex">
                 {#each drones as drone}
-                <DroneLabel droneID={drone} />
+                <DroneLabel droneID={drone.droneID} bind:this={drone.droneLabel} onSelect={selectDrone} />
                 {/each}
             </div>
             <div class="col g-0">
@@ -128,7 +144,7 @@
 </div>
 <div class="status-layer" style="gap:6px">
     {#each drones as drone}
-    <DroneStatus droneID={drone} />
+    <DroneStatus droneID={drone.droneID} bind:this={drone.droneStatus} showStatus={false}/>
 	{/each}
 </div>
 <div
