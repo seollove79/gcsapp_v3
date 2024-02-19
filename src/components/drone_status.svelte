@@ -29,7 +29,7 @@
         }
     });
 
-    let droneStatus = {
+    export let droneStatus = {
         airSpeed: 0,
         groundSpeed: 0,
         voltage: "--",

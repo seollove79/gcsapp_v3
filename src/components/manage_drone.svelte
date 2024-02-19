@@ -1,3 +1,4 @@
+<svelte:options accessors={true}/>
 <script>
     import DroneLabel from "./drone_label.svelte";
     import DroneStatus from "./drone_status.svelte";
@@ -6,7 +7,7 @@
     let modal = null;
     let modalConnecting = false;
     let modalError = null;
-    let drones = [];
+    export let drones = [];
 
     function openModal() {
         modalConnecting = false;

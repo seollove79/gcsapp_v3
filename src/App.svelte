@@ -20,6 +20,8 @@
 		waypointMarker: [],
 	};
 
+	let manageDrone = null;
+
 	function vwmap() {
 		let controlDensity = "vw.DensityType.BASIC";
 		let interactionDensity = "vw.DensityType.BASIC";
@@ -48,6 +50,9 @@
 
 		$MAP_HANDLER.setInputAction(function (click) {
 			let ray = $MAP_VIEWER.camera.getPickRay(click.position);
+			let drone = manageDrone.drones.find(drone => drone.droneID === $SELECTED_DRONE);
+			let newAlt = drone.droneStatus.droneStatus.alt;
+
 			let cartesian = $MAP_VIEWER.scene.globe.pick(
 				ray,
 				$MAP_VIEWER.scene,
@@ -67,7 +72,7 @@
 				let point2 = Cesium.Cartesian3.fromDegrees(
 					longitude,
 					latitude,
-					height + 10,
+					height + newAlt,
 				);
 
 				let guidedPopup = document.getElementById("guidedPopup");
@@ -104,17 +109,13 @@
 						},
 					});
 
-					gotoLocation(longitude, latitude, height);
+					gotoLocation(longitude, latitude, newAlt);
 				};
 			}
 		}, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
 	}
 
 	async function gotoLocation(longitude, latitude, height) {
-		
-
-		console.log($SELECTED_DRONE);
-
 		try {
 			const response = await fetch($DRONEKIT_API + "goto_location/", {
 				method: "POST",
@@ -136,33 +137,10 @@
 			const data = await response.json();
 			console.log(data);
 
-			// if (data.status === "start takeoff") {
-			// 	alert("이륙시작");
-			// }
 		} catch (error) {
 			console.error("Error:", error);
 		} finally {
 		}
-
-		// fetch(DRONEKIT_API + "goto_location", {
-		// 	method: "POST",
-		// 	headers: {
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify({
-		// 		longitude: longitude,
-		// 		latitude: latitude,
-		// 		altitude: height,
-		// 	}),
-		// })
-		// 	.then((response) => response.json())
-		// 	.then((data) => {
-		// 		console.log("Success:", data);
-		// 		popupManager.popup1.style.display = "none";
-		// 	})
-		// 	.catch((error) => {
-		// 		console.error("Error:", error);
-		// 	});
 	}
 
 	onMount(async () => {
@@ -173,7 +151,7 @@
 <div class="fullscreen-layer">
 	<div id="vmap" style="width:100%;height:100%"></div>
 	<Top />
-	<ManageDrone />
+	<ManageDrone bind:this={manageDrone} />
 </div>
 
 <div id="guidedPopup" class="guidedPopup" style="display:none">
