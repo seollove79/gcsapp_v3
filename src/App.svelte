@@ -49,6 +49,9 @@
 		);
 
 		$MAP_HANDLER.setInputAction(function (click) {
+			if ($SELECTED_DRONE === null || $SELECTED_DRONE === undefined || $SELECTED_DRONE === "") {
+				return;
+			}
 			let ray = $MAP_VIEWER.camera.getPickRay(click.position);
 			let drone = manageDrone.drones.find(drone => drone.droneID === $SELECTED_DRONE);
 			let newAlt = drone.droneStatus.droneStatus.alt;
