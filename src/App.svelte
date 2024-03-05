@@ -2,11 +2,14 @@
 	import { onMount } from "svelte";
 	import Top from "./components/top.svelte";
 	import ManageDrone from "./components/manage_drone.svelte";
+	import TakeoffInfo from "./components/takeoff_info.svelte";
+
 	import {
 		MAP_VIEWER,
 		MAP_HANDLER,
 		SELECTED_DRONE,
 		DRONEKIT_API,
+		SHOW_TAKEOFF_INFO,
 	} from "./store";
 	import * as Cesium from "cesium";
 
@@ -146,6 +149,11 @@
 		}
 	}
 
+	async function takeoff(altitude, droneId) {
+		alert("test");
+	}
+
+
 	onMount(async () => {
 		vwmap();
 	});
@@ -161,20 +169,15 @@
 	<table>
 		<tr>
 			<td width="20" style="background-color: #c2c2c2;"></td>
-			<td style="padding:5px;background-color: white;"
-				><button id="btnGotoPoint">이곳으로 비행</button></td
-			>
+			<td style="padding:5px;background-color: white;"><button id="btnGotoPoint">이곳으로 비행</button></td>
 		</tr>
 		<tr>
 			<td width="20" style="background-color: #c2c2c2;"></td>
-			<td style="padding:5px;background-color: white;"
-				><button id="btnGotoPointWithCurrentAlt"
-					>이곳으로 비행(현재고도 유지)</button
-				></td
-			>
+			<td style="padding:5px;background-color: white;"><button id="btnGotoPointWithCurrentAlt">이곳으로 비행(현재고도 유지)</button></td>
 		</tr>
 	</table>
 </div>
+<TakeoffInfo display={$SHOW_TAKEOFF_INFO} runTakeoff={takeoff} />
 
 <style>
 	.fullscreen-layer {

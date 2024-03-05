@@ -14,6 +14,7 @@
         DRONE_MODEL_SCALE,
         API_CALL_INTERVAL,
         DRONE_ALTITUDE_OFFSET,
+        SHOW_TAKEOFF_INFO,
     } from "../store";
     export let droneID;
     export let showStatus;
@@ -193,7 +194,8 @@
             let position = Cesium.Cartesian3.fromDegrees(
                 droneStatus.lng,
                 droneStatus.lat,
-                droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+                //droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+                droneStatus.alt + $DRONE_ALTITUDE_OFFSET,
             );
             let hpr = new Cesium.HeadingPitchRoll(
                 Cesium.Math.toRadians(droneStatus.yaw - $DRONE_YAW_OFFSET),
@@ -212,7 +214,8 @@
                 position: Cesium.Cartesian3.fromDegrees(
                     droneStatus.lng,
                     droneStatus.lat,
-                    droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+                    // droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+                    droneStatus.alt + $DRONE_ALTITUDE_OFFSET,
                 ), // 드론의 초기 위치 (경도, 위도, 높이)
                 model: {
                     uri: "/scene.gltf",
@@ -275,42 +278,44 @@
     }
 
     async function takeoff() {
-        if (targetAltitude === null || targetAltitude === "") {
-            alert("이륙고도를 입력해주세요.");
-            return;
-        }
+        $SHOW_TAKEOFF_INFO = true;
+        console.log($SHOW_TAKEOFF_INFO);
+        // if (targetAltitude === null || targetAltitude === "") {
+        //     alert("이륙고도를 입력해주세요.");
+        //     return;
+        // }
 
-        if (targetAltitude < 0) {
-            alert("이륙고도는 0 이상의 숫자로 입력해주세요.");
-            return;
-        }
+        // if (targetAltitude < 0) {
+        //     alert("이륙고도는 0 이상의 숫자로 입력해주세요.");
+        //     return;
+        // }
 
-        try {
-            const response = await fetch($DRONEKIT_API + "takeoff/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    drone_id: droneID,
-                    target_altitude: targetAltitude.toString(),
-                }),
-            });
+        // try {
+        //     const response = await fetch($DRONEKIT_API + "takeoff/", {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify({
+        //             drone_id: droneID,
+        //             target_altitude: targetAltitude.toString(),
+        //         }),
+        //     });
 
-            if (!response.ok) {
-                throw new Error("서버 에러: " + response.statusText);
-            }
+        //     if (!response.ok) {
+        //         throw new Error("서버 에러: " + response.statusText);
+        //     }
 
-            const data = await response.json();
-            console.log(data);
+        //     const data = await response.json();
+        //     console.log(data);
 
-            if (data.status === "start takeoff") {
-                alert("이륙시작");
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        } finally {
-        }
+        //     if (data.status === "start takeoff") {
+        //         alert("이륙시작");
+        //     }
+        // } catch (error) {
+        //     console.error("Error:", error);
+        // } finally {
+        // }
     }
     
 </script>
