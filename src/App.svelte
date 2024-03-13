@@ -90,6 +90,7 @@
 				guidedPopup.style.left = click.position.x + "px";
 
 				let btnGotoPoint = document.getElementById("btnGotoPoint");
+				let btnGotoPointWithCurrentAlt = document.getElementById("btnGotoPointWithCurrentAlt");
 
 				btnGotoPoint.onclick = () => {
 					guidedPopup.style.display = "none";
@@ -117,11 +118,57 @@
 
 					gotoLocation(longitude, latitude, newAlt);
 				};
+
+				btnGotoPointWithCurrentAlt.onclick = () => {
+					console.log("두번째 버튼 클릭");
+					guidedPopup.style.display = "none";
+					if (entityManager.guidedPositionLine != null) {
+						$MAP_VIEWER.entities.remove(entityManager.guidedPositionLine);
+						$MAP_VIEWER.entities.remove(entityManager.guidedPositionMarker);
+					}
+
+					let point1 = Cesium.Cartesian3.fromDegrees(
+						longitude,
+						latitude,
+						height,
+					);
+
+					let point2 = Cesium.Cartesian3.fromDegrees(
+						longitude,
+						latitude,
+						drone.droneStatus.droneStatus.slAlt,
+					);
+
+
+					// 선 그리기
+					entityManager.guidedPositionLine = $MAP_VIEWER.entities.add({
+						polyline: {
+							positions: [point1, point2],
+							width: 2,
+							color: Cesium.Color.RED,
+						},
+					});
+
+					entityManager.guidedPositionMarker = $MAP_VIEWER.entities.add({
+						position: point2,
+						point: {
+							pixelSize: 15,
+							color: Cesium.Color.YELLOW,
+						},
+					});
+
+					gotoLocation(longitude, latitude, height, "relative");
+				};
 			}
 		}, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+
+		$MAP_HANDLER.setInputAction(function (click) {
+			let guidedPopup = document.getElementById("guidedPopup");
+			guidedPopup.style.display = "none";
+		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 	}
 
-	async function gotoLocation(longitude, latitude, height) {
+	async function gotoLocation(longitude, latitude, height, method) {
 		try {
 			const response = await fetch($DRONEKIT_API + "goto_location/", {
 				method: "POST",
@@ -133,6 +180,7 @@
 					longitude: longitude,
 					latitude: latitude,
 					altitude: height,
+					method: method,
 				}),
 			});
 
@@ -177,7 +225,10 @@
 		</tr>
 	</table>
 </div>
-<TakeoffInfo display={$SHOW_TAKEOFF_INFO} runTakeoff={takeoff} />
+
+{#if $SHOW_TAKEOFF_INFO===true}
+	<TakeoffInfo runTakeoff={takeoff} />
+{/if}
 
 <style>
 	.fullscreen-layer {

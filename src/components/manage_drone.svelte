@@ -111,6 +111,7 @@
 
     function selectDrone(droneID) {
         let drone = drones.find(drone => drone.droneID === droneID);
+        drone.droneStatus.verticalView();
         if (drone.droneStatus.showStatus) {
             drone.droneStatus.showStatus = false;
         } else {
