@@ -2,7 +2,7 @@
 <script>
     import DroneLabel from "./drone_label.svelte";
     import DroneStatus from "./drone_status.svelte";
-    import { DRONEKIT_API, SELECTED_DRONE } from "../store";
+    import { DRONEKIT_API, SELECTED_DRONE, SELECTED_DRONE_OBJECT } from "../store";
 
     let modal = null;
     let modalConnecting = false;
@@ -119,6 +119,7 @@
             drone.droneStatus.showStatus = true;
         }
         $SELECTED_DRONE = droneID;
+        $SELECTED_DRONE_OBJECT = drone;
     }
 
 </script>

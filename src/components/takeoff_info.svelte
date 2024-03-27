@@ -1,6 +1,5 @@
 <script>
     import { SHOW_TAKEOFF_INFO, SELECTED_DRONE, DRONEKIT_API } from "../store";
-    export let runTakeoff;
 
     let takeoffAlt=10;
     function closeWindow() {

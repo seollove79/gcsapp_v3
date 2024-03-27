@@ -3,6 +3,7 @@
 	import Top from "./components/top.svelte";
 	import ManageDrone from "./components/manage_drone.svelte";
 	import TakeoffInfo from "./components/takeoff_info.svelte";
+	import GuideAltInfo from "./components/guide_alt_info.svelte";
 
 	import {
 		MAP_VIEWER,
@@ -10,12 +11,13 @@
 		SELECTED_DRONE,
 		DRONEKIT_API,
 		SHOW_TAKEOFF_INFO,
+		SHOW_GUIDE_ALT_INFO,
+		SELECTED_DRONE_OBJECT,
 	} from "./store";
 	import * as Cesium from "cesium";
 
 	let map3d = null;
-	let drone = null;
-
+	
 	let entityManager = {
 		guidedPositionLine: null,
 		guidedPositionMarker: null,
@@ -24,6 +26,10 @@
 	};
 
 	let manageDrone = null;
+		
+	// 가이드 모드 목적지 위치 관리
+	let guideLatitude = 0;
+	let guideLongitude = 0;
 
 	function vwmap() {
 		let controlDensity = "vw.DensityType.BASIC";
@@ -56,8 +62,6 @@
 				return;
 			}
 			let ray = $MAP_VIEWER.camera.getPickRay(click.position);
-			let drone = manageDrone.drones.find(drone => drone.droneID === $SELECTED_DRONE);
-			let newAlt = drone.droneStatus.droneStatus.alt;
 
 			let cartesian = $MAP_VIEWER.scene.globe.pick(
 				ray,
@@ -70,23 +74,11 @@
 				let latitude = Cesium.Math.toDegrees(cartographic.latitude);
 				let height = cartographic.height;
 
-				let point1 = Cesium.Cartesian3.fromDegrees(
-					longitude,
-					latitude,
-					height,
-				);
-				let point2 = Cesium.Cartesian3.fromDegrees(
-					longitude,
-					latitude,
-					height + newAlt,
-				);
-
 				let guidedPopup = document.getElementById("guidedPopup");
 
 				guidedPopup.style.display = "block";
 				guidedPopup.style.position = "absolute";
-				guidedPopup.style.bottom =
-					$MAP_VIEWER.canvas.clientHeight - click.position.y + "px";
+				guidedPopup.style.bottom = $MAP_VIEWER.canvas.clientHeight - click.position.y + "px";
 				guidedPopup.style.left = click.position.x + "px";
 
 				let btnGotoPoint = document.getElementById("btnGotoPoint");
@@ -94,33 +86,12 @@
 
 				btnGotoPoint.onclick = () => {
 					guidedPopup.style.display = "none";
-					if (entityManager.guidedPositionLine != null) {
-						$MAP_VIEWER.entities.remove(entityManager.guidedPositionLine);
-						$MAP_VIEWER.entities.remove(entityManager.guidedPositionMarker);
-					}
-
-					// 선 그리기
-					entityManager.guidedPositionLine = $MAP_VIEWER.entities.add({
-						polyline: {
-							positions: [point1, point2],
-							width: 2,
-							color: Cesium.Color.RED,
-						},
-					});
-
-					entityManager.guidedPositionMarker = $MAP_VIEWER.entities.add({
-						position: point2,
-						point: {
-							pixelSize: 15,
-							color: Cesium.Color.YELLOW,
-						},
-					});
-
-					gotoLocation(longitude, latitude, newAlt);
+					guideLatitude = latitude;
+					guideLongitude = longitude;
+					$SHOW_GUIDE_ALT_INFO = true;
 				};
 
 				btnGotoPointWithCurrentAlt.onclick = () => {
-					console.log("두번째 버튼 클릭");
 					guidedPopup.style.display = "none";
 					if (entityManager.guidedPositionLine != null) {
 						$MAP_VIEWER.entities.remove(entityManager.guidedPositionLine);
@@ -130,13 +101,12 @@
 					let point1 = Cesium.Cartesian3.fromDegrees(
 						longitude,
 						latitude,
-						height,
 					);
 
 					let point2 = Cesium.Cartesian3.fromDegrees(
 						longitude,
 						latitude,
-						drone.droneStatus.droneStatus.slAlt,
+						$SELECTED_DRONE_OBJECT.droneStatus.droneStatus.homeAlt + $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.alt,
 					);
 
 
@@ -157,7 +127,8 @@
 						},
 					});
 
-					gotoLocation(longitude, latitude, height, "relative");
+					gotoLocation(latitude, longitude, $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.alt, "relative");
+
 				};
 			}
 		}, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
@@ -168,7 +139,7 @@
 		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 	}
 
-	async function gotoLocation(longitude, latitude, height, method) {
+	async function gotoLocation(latitude, longitude, altitude, method) {
 		try {
 			const response = await fetch($DRONEKIT_API + "goto_location/", {
 				method: "POST",
@@ -177,9 +148,9 @@
 				},
 				body: JSON.stringify({
 					drone_id: $SELECTED_DRONE,
-					longitude: longitude,
 					latitude: latitude,
-					altitude: height,
+					longitude: longitude,
+					altitude: altitude.toString(),
 					method: method,
 				}),
 			});
@@ -190,17 +161,12 @@
 
 			const data = await response.json();
 			console.log(data);
-
+			closeWindow();
 		} catch (error) {
 			console.error("Error:", error);
 		} finally {
 		}
 	}
-
-	async function takeoff(altitude, droneId) {
-		alert("test");
-	}
-
 
 	onMount(async () => {
 		vwmap();
@@ -227,7 +193,11 @@
 </div>
 
 {#if $SHOW_TAKEOFF_INFO===true}
-	<TakeoffInfo runTakeoff={takeoff} />
+	<TakeoffInfo />
+{/if}
+
+{#if $SHOW_GUIDE_ALT_INFO===true}
+	<GuideAltInfo latitude={guideLatitude} longitude={guideLongitude} entityManager={entityManager} />
 {/if}
 
 <style>

@@ -49,6 +49,7 @@
         pitch: 0,
         yaw: 0,
         home: null,
+        homeAlt: 0,
         calSLAlt: 0,
     };
 
@@ -107,28 +108,21 @@
                     armed = "DISARMED";
                 }
 
-                if(data["Home"] === "None") {
-                    homeAlt = 0;
-                } else {
-                    let splitHome = data["Home"].split(":");
-                    splitHome = splitHome[1];
-                    splitHome = splitHome.split(",");
-                    let lat = splitHome[0];
-                    let lon = splitHome[1];
-                    let alt = splitHome[2];
-                    homeLat = lat.split("=")[1];
-                    homeLng = lon.split("=")[1];
-                    homeAlt = alt.split("=")[1];
-                }
+                let splitHome = data["Home"].split(":");
+                splitHome = splitHome[1];
+                splitHome = splitHome.split(",");
+                let lat = splitHome[0];
+                let lon = splitHome[1];
+                let alt = splitHome[2];
+                homeLat = lat.split("=")[1];
+                homeLng = lon.split("=")[1];
+                homeAlt = alt.split("=")[1];
 
-                var cartographicPosition = Cesium.Cartographic.fromDegrees(parseFloat(homeLng), parseFloat(homeLat));
-                var globe = $MAP_VIEWER.scene.globe;
-                var height = globe.getHeight(cartographicPosition);
-                calSLAlt = height + parseFloat(data["Alt"]);
-                console.log("지도상의 홈고도: " + height + " 미터");
-                console.log("드론의 상대고도: " + data["Alt"] + " 미터");
-                console.log("새로운 고도: " + calSLAlt + " 미터");
-                
+                let cartographicPosition = Cesium.Cartographic.fromDegrees(parseFloat(homeLng), parseFloat(homeLat));
+                let globe = $MAP_VIEWER.scene.globe;
+                let height = globe.getHeight(cartographicPosition);
+                calSLAlt = height + parseFloat(data["Alt"]); //홈포지션의 해수면고도 + 상대고도
+               
                 droneStatus = {
                     airSpeed: parseFloat(data["AirSpeed"]).toFixed(2),
                     groundSpeed: parseFloat(data["GroundSpeed"]).toFixed(2),
@@ -147,10 +141,10 @@
                     pitch: data["Pitch"],
                     yaw: data["Yaw"],
                     home: data["Home"],
+                    homeAlt : height,
                     calSLAlt: calSLAlt,
                 };
 
-                
                 droneStatus = droneStatus;
                 viewDrone();
                 if (showStatus === true) {
@@ -224,7 +218,6 @@
 
     function viewDrone() {
         if (drone != null) {
-            console.log("표시고도:"+(droneStatus.calSLAlt + $DRONE_ALTITUDE_OFFSET));
             let position = Cesium.Cartesian3.fromDegrees(
                 droneStatus.lng,
                 droneStatus.lat,

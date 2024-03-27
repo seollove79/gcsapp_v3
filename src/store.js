@@ -11,7 +11,7 @@ export const MAP_HANDLER = writable(mapHandler)
 let droneYawOffset = 90;
 export const DRONE_YAW_OFFSET = writable(droneYawOffset)
 
-let droneAltitudeOffset = 1;
+let droneAltitudeOffset = 0;
 export const DRONE_ALTITUDE_OFFSET = writable(droneAltitudeOffset)
 
 let droneModelScale = 0.003;
@@ -23,8 +23,14 @@ export const API_CALL_INTERVAL = writable(apiCallInterval)
 let selectedDrone = null;
 export const SELECTED_DRONE = writable(selectedDrone)
 
+let selectedDroneObject = null;
+export const SELECTED_DRONE_OBJECT = writable(selectedDroneObject)
+
 let showTakeoffInfo = false;
 export const SHOW_TAKEOFF_INFO = writable(showTakeoffInfo)
+
+let showGuideAltInfo = false;
+export const SHOW_GUIDE_ALT_INFO = writable(showGuideAltInfo)
 
 let slAltOffset = 0;
 export const SL_ALT_OFFSET = writable(slAltOffset)
