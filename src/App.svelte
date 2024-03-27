@@ -171,7 +171,6 @@
 
 			const data = await response.json();
 			console.log(data);
-			closeWindow();
 		} catch (error) {
 			console.error("Error:", error);
 		} finally {
