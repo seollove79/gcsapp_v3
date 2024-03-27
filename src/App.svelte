@@ -4,6 +4,7 @@
 	import ManageDrone from "./components/manage_drone.svelte";
 	import TakeoffInfo from "./components/takeoff_info.svelte";
 	import GuideAltInfo from "./components/guide_alt_info.svelte";
+	import GuideDistanceInfo from "./components/guide_distance_info.svelte";
 
 	import {
 		MAP_VIEWER,
@@ -12,6 +13,7 @@
 		DRONEKIT_API,
 		SHOW_TAKEOFF_INFO,
 		SHOW_GUIDE_ALT_INFO,
+		SHOW_GUIDE_DISTANCE_INFO,
 		SELECTED_DRONE_OBJECT,
 	} from "./store";
 	import * as Cesium from "cesium";
@@ -83,6 +85,7 @@
 
 				let btnGotoPoint = document.getElementById("btnGotoPoint");
 				let btnGotoPointWithCurrentAlt = document.getElementById("btnGotoPointWithCurrentAlt");
+				let btnGotoPointWithDistance = document.getElementById("btnGotoPointWithDistance");
 
 				btnGotoPoint.onclick = () => {
 					guidedPopup.style.display = "none";
@@ -129,6 +132,13 @@
 
 					gotoLocation(latitude, longitude, $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.alt, "relative");
 
+				};
+
+				btnGotoPointWithDistance.onclick = () => {
+					guidedPopup.style.display = "none";
+					guideLatitude = latitude;
+					guideLongitude = longitude;
+					$SHOW_GUIDE_DISTANCE_INFO = true;
 				};
 			}
 		}, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
@@ -189,6 +199,10 @@
 			<td width="20" style="background-color: #c2c2c2;"></td>
 			<td style="padding:5px;background-color: white;"><button id="btnGotoPointWithCurrentAlt">이곳으로 비행(현재고도 유지)</button></td>
 		</tr>
+		<tr>
+			<td width="20" style="background-color: #c2c2c2;"></td>
+			<td style="padding:5px;background-color: white;"><button id="btnGotoPointWithDistance">이곳으로 비행(지면거리 유지)</button></td>
+		</tr>
 	</table>
 </div>
 
@@ -198,6 +212,10 @@
 
 {#if $SHOW_GUIDE_ALT_INFO===true}
 	<GuideAltInfo latitude={guideLatitude} longitude={guideLongitude} entityManager={entityManager} />
+{/if}
+
+{#if $SHOW_GUIDE_DISTANCE_INFO===true}
+	<GuideDistanceInfo latitude={guideLatitude} longitude={guideLongitude} entityManager={entityManager} />
 {/if}
 
 <style>

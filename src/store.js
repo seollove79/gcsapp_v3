@@ -32,5 +32,8 @@ export const SHOW_TAKEOFF_INFO = writable(showTakeoffInfo)
 let showGuideAltInfo = false;
 export const SHOW_GUIDE_ALT_INFO = writable(showGuideAltInfo)
 
+let showGuideDistanceInfo = false;
+export const SHOW_GUIDE_DISTANCE_INFO = writable(showGuideDistanceInfo)
+
 let slAltOffset = 0;
 export const SL_ALT_OFFSET = writable(slAltOffset)
