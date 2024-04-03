@@ -19,12 +19,16 @@
     } from "../store";
     export let droneID;
     export let showStatus;
+    export let planningMode = false;
 
     import * as Cesium from "cesium";
 
     let drone = null;
     let intervalInstance = null;
-    let planingMode = false;
+    let missionAlt = 30;
+    let missionAltType = "relative";
+    let missionRadius = 2.00;
+    
 
     onMount(() => {
         if (intervalInstance === null) {
@@ -405,7 +409,7 @@
     }
 
     function changePlanningMode() {
-        planingMode = !planingMode;
+        planningMode = !planningMode;
         
     }
 </script>
@@ -547,7 +551,7 @@
                 <div class="container p-0">
                     <div class="row g-1">
                         <div class="col">
-{#if planingMode === true}
+{#if planningMode === true}
                             <button type="button" class="btn btn-secondary" style="width:100%;background-color:red;" on:click={changePlanningMode} id="btnChangePlanningMode">계획모드비활성화</button>
 {:else}
                             <button type="button" class="btn btn-secondary" style="width:100%;" on:click={changePlanningMode} id="btnChangePlanningMode">계획모드활성화</button>
@@ -558,6 +562,22 @@
                         </div>
                         <div class="col">
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={land}>비행시작</button>
+                        </div>
+                    </div>
+                    <div class="row g-1" style="margin-top:5px">
+                        <div class="col">
+                            <select id="missionAltType" style="width:100%" bind:value={missionAltType}>
+                                <option value="">고도타입</option>
+                                <option value="">=========</option>
+                                <option value="relative" selected>상대고도</option>
+                                <option value="absolute">절대고도</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <input type="number" bind:value={missionAlt} style="height: 100%;" placeholder="임무고도">
+                        </div>
+                        <div class="col">
+                            <input type="number" bind:value={missionRadius} style="height: 100%;" placeholder="인정범위">
                         </div>
                     </div>
                 </div>

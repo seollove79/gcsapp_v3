@@ -146,7 +146,23 @@
 		$MAP_HANDLER.setInputAction(function (click) {
 			let guidedPopup = document.getElementById("guidedPopup");
 			guidedPopup.style.display = "none";
+
+			if($SELECTED_DRONE_OBJECT === null || $SELECTED_DRONE_OBJECT === undefined) {
+				return;
+			} else {
+				makeFlightPlan();
+			}
 		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+	}
+
+	function makeFlightPlan() {
+		if ($SELECTED_DRONE_OBJECT === null || $SELECTED_DRONE_OBJECT === undefined) {
+			return;
+		}
+
+		if ($SELECTED_DRONE_OBJECT.droneStatus.planningMode === true) {
+			return;
+		}
 	}
 
 	async function gotoLocation(latitude, longitude, altitude, method) {
