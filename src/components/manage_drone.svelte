@@ -3,6 +3,7 @@
     import DroneLabel from "./drone_label.svelte";
     import DroneStatus from "./drone_status.svelte";
     import { DRONEKIT_API, SELECTED_DRONE, SELECTED_DRONE_OBJECT } from "../store";
+    import { create_bidirectional_transition } from "svelte/internal";
 
     let modal = null;
     let modalConnecting = false;
@@ -110,18 +111,22 @@
     }
 
     function selectDrone(droneID) {
-        let drone = drones.find(drone => drone.droneID === droneID);
-        drone.droneStatus.verticalView();
-        if (drone.droneStatus.showStatus) {
-            drone.droneStatus.showStatus = false;
-        } else {
-            drones.forEach(drone => drone.droneStatus.showStatus = false);
-            drone.droneStatus.showStatus = true;
-        }
-        $SELECTED_DRONE = droneID;
-        $SELECTED_DRONE_OBJECT = drone;
+        drones.forEach(drone => {
+            if (drone.droneID === droneID) {
+                drone.droneLabel.setSelected(true);
+                if (drone.droneStatus.showStatus) {
+                    drone.droneStatus.showStatus = false;
+                } else {
+                    drones.forEach(drone => drone.droneStatus.showStatus = false);
+                    drone.droneStatus.showStatus = true;
+                }
+                $SELECTED_DRONE = droneID;
+                $SELECTED_DRONE_OBJECT = drone;
+            } else {
+                drone.droneLabel.setSelected(false);
+            }
+        });
     }
-
 </script>
 
 <div class="manage-drone-layer">

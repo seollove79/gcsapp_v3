@@ -35,5 +35,8 @@ export const SHOW_GUIDE_ALT_INFO = writable(showGuideAltInfo)
 let showGuideDistanceInfo = false;
 export const SHOW_GUIDE_DISTANCE_INFO = writable(showGuideDistanceInfo)
 
+let planningMode = false;
+export const PLANNING_MODE = writable(planningMode)
+
 let slAltOffset = 0;
 export const SL_ALT_OFFSET = writable(slAltOffset)

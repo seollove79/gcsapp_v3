@@ -24,6 +24,7 @@
 
     let drone = null;
     let intervalInstance = null;
+    let planingMode = false;
 
     onMount(() => {
         if (intervalInstance === null) {
@@ -279,6 +280,73 @@
         });
     }
 
+    export function tailView() {
+        var dronePosition = Cesium.Cartesian3.fromDegrees(
+            droneStatus.lng,
+            droneStatus.lat,
+            droneStatus.calSLAlt,
+        );
+
+        // 드론의 현재 위치를 바라보는 카메라의 orientation 계산
+        var hpr = new Cesium.HeadingPitchRange(
+            Cesium.Math.toRadians(droneStatus.yaw),
+            droneStatus.pitch,
+            10, // 5미터 뒤에서 드론을 바라봄
+        );
+
+        var cameraPosition = $MAP_VIEWER.camera.positionWC;
+
+        $MAP_VIEWER.camera.flyTo({
+            destination: dronePosition,
+            orientation: hpr,
+            duration: 1,
+            easingFunction: Cesium.EasingFunction.LINEAR_NONE,
+            complete: function () {
+                //카메라가 목적지에 도착한 후, 드론 뒤로 5미터 이동한 위치를 다시 계산하여 카메라를 조정
+                $MAP_VIEWER.camera.lookAt(
+                    dronePosition,
+                    new Cesium.HeadingPitchRange(
+                        Cesium.Math.toRadians(droneStatus.yaw),
+                        0,
+                        10,
+                    ),
+                );
+
+                // 카메라 제어를 복원
+                $MAP_VIEWER.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+            },
+        });
+    }
+
+    export function fpvView() {
+        var dronePosition = Cesium.Cartesian3.fromDegrees(
+            droneStatus.lng,
+            droneStatus.lat,
+            droneStatus.slAlt,
+        );
+
+        // 드론의 수직 위치에서 20미터 위를 계산
+        var cameraPosition = Cesium.Cartesian3.fromDegrees(
+            droneStatus.lng,
+            droneStatus.lat,
+            droneStatus.slAlt, // 드론 위치 + 20미터
+        );
+
+        // 드론의 현재 위치를 바라보는 카메라의 orientation 계산
+        var hpr = new Cesium.HeadingPitchRange(
+            Cesium.Math.toRadians(droneStatus.yaw),
+            droneStatus.pitch,
+            10, // 10미터 뒤에서 드론을 바라봄
+        );
+
+        $MAP_VIEWER.camera.flyTo({
+            destination: cameraPosition, // 수정된 카메라 위치
+            orientation: hpr,
+            duration: 1,
+            easingFunction: Cesium.EasingFunction.LINEAR_NONE,
+        });
+    }
+
 
     function moveMap() {
         var dronePosition = Cesium.Cartesian3.fromDegrees(
@@ -335,29 +403,22 @@
     function takeoff() {
         $SHOW_TAKEOFF_INFO = true;
     }
+
+    function changePlanningMode() {
+        planingMode = !planingMode;
+        
+    }
 </script>
 
 {#if showStatus === true}
     <div style="width:400px">
         <div class="container">
-            <div
-                class="row"
-                style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center"
-            >
+            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
                 <div class="col">드론ID : {droneID}</div>
             </div>
-            <div
-                class="row"
-                style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center"
-            >
-                <div
-                    class="container"
-                    style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;"
-                >
-                    <div
-                        class="row"
-                        style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;"
-                    >
+            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+                <div class="container" style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;">
+                    <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
                         <div class="col">배터리</div>
                         <div class="col">GPS</div>
                         <div class="col">Telemetry</div>
@@ -379,20 +440,11 @@
                         <div class="col">{droneStatus.ekf}</div>
                     </div>
                 </div>
-                <div
-                    class="container"
-                    style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;"
-                >
+                <div class="container" style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;">
                     <div class="row">
-                        <div
-                            class="col g-0"
-                            style="border-right:1px solid rgba(150,150,150,0.8);"
-                        >
+                        <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
                             <div class="container">
-                                <div
-                                    class="row"
-                                    style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;"
-                                >
+                                <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
                                     <div class="col">고도 (m)</div>
                                 </div>
                                 <div class="row" style="padding:5px 0 5px 0">
@@ -405,15 +457,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div
-                            class="col g-0"
-                            style="border-right:1px solid rgba(150,150,150,0.8);"
-                        >
+                        <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
                             <div class="container">
-                                <div
-                                    class="row"
-                                    style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;"
-                                >
+                                <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
                                     <div class="col">속도 (m/s)</div>
                                 </div>
                                 <div class="row" style="padding:5px 0 5px 0">
@@ -432,93 +478,86 @@
         </div>
     </div>
 
-    <!-- 명령 패널 시작 -->
+    <!-- 시점 패널 시작 -->
     <div style="width:400px" class="status-layer">
         <div class="container">
-            <div
-                class="row"
-                style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center"
-            >
-                <div class="col">제어명령 ({droneID})</div>
+            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+                <div class="col">시점제어 ({droneID})</div>
             </div>
-            <div
-                class="row"
-                style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center"
-            >
+            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
                 <div class="container p-0">
                     <div class="row g-1">
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={armOrDisarmDrone}>시동/종료</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={verticalView}>위에서 보기</button>
                         </div>
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={takeoff}>이륙</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={tailView}>뒤에서 보기</button>
                         </div>
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={land}>착륙</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={fpvView}>FPV 시점</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 명령 패널 시작 -->
+    <div style="width:400px" class="status-layer">
+        <div class="container">
+            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+                <div class="col">제어명령 ({droneID})</div>
+            </div>
+            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+                <div class="container p-0">
+                    <div class="row g-1">
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={armOrDisarmDrone}>시동/종료</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={takeoff}>이륙</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={land}>착륙</button>
                         </div>
                     </div>
                     <div class="row g-1" style="margin-top:5px">
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={() => changeFlightMode("LOITER")}
-                                >LOITER</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("LOITER")}>LOITER</button>
                         </div>
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={() => changeFlightMode("ALT_HOLD")}
-                                >ALT HOLD</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("ALT_HOLD")}>ALT HOLD</button>
                         </div>
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={() => changeFlightMode("STABILIZE")}
-                                >STABILIZE</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("STABILIZE")}>STABILIZE</button>
                         </div>
                     </div>
-                    <div class="row g-1" style="margin-top:1px">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 비행계획 패널 시작 -->
+    <div style="width:400px" class="status-layer">
+        <div class="container">
+            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+                <div class="col">비행계획 ({droneID})</div>
+            </div>
+            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+                <div class="container p-0">
+                    <div class="row g-1">
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={() => changeFlightMode("GUIDED")}
-                                >GUIDED</button
-                            >
+{#if planingMode === true}
+                            <button type="button" class="btn btn-secondary" style="width:100%;background-color:red;" on:click={changePlanningMode} id="btnChangePlanningMode">계획모드비활성화</button>
+{:else}
+                            <button type="button" class="btn btn-secondary" style="width:100%;" on:click={changePlanningMode} id="btnChangePlanningMode">계획모드활성화</button>
+{/if}
                         </div>
                         <div class="col">
-                            <button
-                                type="button"
-                                class="btn btn-secondary"
-                                style="width:100%"
-                                on:click={() => changeFlightMode("AUTO")}
-                                >AUTO</button
-                            >
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={takeoff}>계획전송</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={land}>비행시작</button>
                         </div>
                     </div>
                 </div>
