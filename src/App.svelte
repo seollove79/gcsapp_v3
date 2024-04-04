@@ -150,19 +150,10 @@
 			if($SELECTED_DRONE_OBJECT === null || $SELECTED_DRONE_OBJECT === undefined) {
 				return;
 			} else {
-				makeFlightPlan();
+				$SELECTED_DRONE_OBJECT.droneStatus.planningMode = false;
+				$SELECTED_DRONE_OBJECT.droneStatus.makeFlightPlan();
 			}
 		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-	}
-
-	function makeFlightPlan() {
-		if ($SELECTED_DRONE_OBJECT === null || $SELECTED_DRONE_OBJECT === undefined) {
-			return;
-		}
-
-		if ($SELECTED_DRONE_OBJECT.droneStatus.planningMode === true) {
-			return;
-		}
 	}
 
 	async function gotoLocation(latitude, longitude, altitude, method) {

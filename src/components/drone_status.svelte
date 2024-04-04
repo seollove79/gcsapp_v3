@@ -25,9 +25,9 @@
 
     let drone = null;
     let intervalInstance = null;
-    let missionAlt = 30;
-    let missionAltType = "relative";
-    let missionRadius = 2.00;
+    export let missionAlt = 30;
+    export let missionAltType = "relative";
+    export let missionRadius = 2.00;
     
 
     onMount(() => {
@@ -410,7 +410,10 @@
 
     function changePlanningMode() {
         planningMode = !planningMode;
-        
+    }
+
+    export function makeFlightPlan() {
+        console.log("안쪽으로 잘 들어왔어.");
     }
 </script>
 
@@ -565,19 +568,49 @@
                         </div>
                     </div>
                     <div class="row g-1" style="margin-top:5px">
-                        <div class="col">
-                            <select id="missionAltType" style="width:100%" bind:value={missionAltType}>
-                                <option value="">고도타입</option>
-                                <option value="">=========</option>
-                                <option value="relative" selected>상대고도</option>
-                                <option value="absolute">절대고도</option>
-                            </select>
-                        </div>
-                        <div class="col">
-                            <input type="number" bind:value={missionAlt} style="height: 100%;" placeholder="임무고도">
-                        </div>
-                        <div class="col">
-                            <input type="number" bind:value={missionRadius} style="height: 100%;" placeholder="인정범위">
+                        <div class="container" style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;">
+                            <div class="row">
+                                <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
+                                    <div class="container">
+                                        <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
+                                            <div class="col">고도타입</div>
+                                        </div>
+                                        <div class="row" style="padding:5px 0 5px 0">
+                                            <div class="col">
+                                                <select id="missionAltType" style="width:100%;height:100%" bind:value={missionAltType}>
+                                                    <option value="relative" selected>relative</option>
+                                                    <option value="absolute">absolute</option>
+                                                    <option value="terrain">terrain</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
+                                    <div class="container">
+                                        <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
+                                            <div class="col">임무고도</div>
+                                        </div>
+                                        <div class="row" style="padding:5px 0 5px 0">
+                                            <div class="col">
+                                                <input type="number" bind:value={missionAlt} placeholder="임무고도" style="width:100%;height:100%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
+                                    <div class="container">
+                                        <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
+                                            <div class="col">인정범위</div>
+                                        </div>
+                                        <div class="row" style="padding:5px 0 5px 0">
+                                            <div class="col">
+                                                <input type="number" bind:value={missionRadius} placeholder="인정범위" style="width:100%;height:100%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
