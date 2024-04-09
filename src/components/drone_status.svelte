@@ -1,5 +1,3 @@
-<svelte:options accessors={true} />
-
 <script>
     import {
         onMount,
@@ -22,7 +20,6 @@
     export let planningMode = false;
 
     import * as Cesium from "cesium";
-    import { draw } from "svelte/types/runtime/transition";
 
     let drone = null;
     let intervalInstance = null;
