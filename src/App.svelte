@@ -151,7 +151,7 @@
 			if($SELECTED_DRONE_OBJECT === null || $SELECTED_DRONE_OBJECT === undefined) {
 				return;
 			} else {
-				if($SELECTED_DRONE_OBJECT.droneStatus.planningMode === true) {
+				if($SELECTED_DRONE_OBJECT.droneStatus.getPlanningMode() === true) {
 					let ray = $MAP_VIEWER.camera.getPickRay(click.position);
 					let cartesian = $MAP_VIEWER.scene.globe.pick(
 						ray,

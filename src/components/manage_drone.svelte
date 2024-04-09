@@ -115,10 +115,10 @@
             if (drone.droneID === droneID) {
                 drone.droneLabel.setSelected(true);
                 if (drone.droneStatus.showStatus) {
-                    drone.droneStatus.showStatus = false;
+                    drone.droneStatus.setShowStatus(false);
                 } else {
-                    drones.forEach(drone => drone.droneStatus.showStatus = false);
-                    drone.droneStatus.showStatus = true;
+                    drones.forEach(drone => drone.droneStatus.setShowStatus(false));
+                    drone.droneStatus.setShowStatus(true);
                 }
                 $SELECTED_DRONE = droneID;
                 $SELECTED_DRONE_OBJECT = drone;
@@ -153,7 +153,7 @@
 </div>
 <div class="status-layer" style="gap:6px">
     {#each drones as drone}
-    <DroneStatus droneID={drone.droneID} bind:this={drone.droneStatus} showStatus={false}/>
+    <DroneStatus droneID={drone.droneID} bind:this={drone.droneStatus}/>
 	{/each}
 </div>
 <div

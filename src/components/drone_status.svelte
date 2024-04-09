@@ -16,8 +16,11 @@
         SHOW_TAKEOFF_INFO,
     } from "../store";
     export let droneID;
-    export let showStatus;
+    let showStatus = false;
     export let planningMode = false;
+    export function getPlanningMode() {
+        return planningMode;
+    }
 
     import * as Cesium from "cesium";
 
@@ -26,6 +29,9 @@
     export let missionAlt = 30;
     export let missionAltType = "relative";
     export let missionRadius = 2.00;   
+    export function setShowStatus(value) {
+        showStatus = value;
+    }
 
     onMount(() => {
         if (intervalInstance === null) {
@@ -63,6 +69,19 @@
     };
 
     let commands = [];
+    // name이 변경될 때만 반응하는 함수
+    let prevCommands = JSON.stringify(commands);
+
+    function handleCommandsChange() {
+        console.log("commands changed");
+        const currentCommands = JSON.stringify(commands);
+        if (currentCommands !== prevCommands) {
+            drawWaypoint();
+            prevCommands = currentCommands;
+        }
+    }
+
+    $: handleCommandsChange();    
 
     function getDroneStatus() {
         let homeAlt=0;
@@ -428,6 +447,10 @@
         });
         commands = commands;
 
+        drawWaypoint();
+    };
+
+    function drawWaypoint() {
         entityManager.waypointPoint.forEach((entity) => {
             $MAP_VIEWER.entities.remove(entity);
         });
@@ -444,10 +467,6 @@
             waypointLine: [],
         }
 
-        drawWaypoint();
-    };
-
-    function drawWaypoint() {
         commands.forEach((command, index) => {
             let point1 = Cesium.Cartesian3.fromDegrees(
                 command.longitude,
