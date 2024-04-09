@@ -22,13 +22,13 @@
     export let planningMode = false;
 
     import * as Cesium from "cesium";
+    import { draw } from "svelte/types/runtime/transition";
 
     let drone = null;
     let intervalInstance = null;
     export let missionAlt = 30;
     export let missionAltType = "relative";
-    export let missionRadius = 2.00;
-    
+    export let missionRadius = 2.00;   
 
     onMount(() => {
         if (intervalInstance === null) {
@@ -59,6 +59,13 @@
     };
 
     let targetAltitude = 10;
+    let entityManager = {
+        waypointPost: [],
+		waypointPoint: [],
+        waypointLine: [],
+    };
+
+    let commands = [];
 
     function getDroneStatus() {
         let homeAlt=0;
@@ -412,20 +419,124 @@
         planningMode = !planningMode;
     }
 
-    export function makeFlightPlan() {
-        console.log("안쪽으로 잘 들어왔어.");
+    export function makeFlightPlan(latitude, longitude) {
+        commands.push({
+            command: "waypoint",
+            latitude: latitude,
+            longitude: longitude,
+            altitude: missionAlt,
+            altitudeType: missionAltType,
+            radius: missionRadius,
+            delay: 0,
+        });
+        commands = commands;
+
+        entityManager.waypointPoint.forEach((entity) => {
+            $MAP_VIEWER.entities.remove(entity);
+        });
+        entityManager.waypointPost.forEach((entity) => {
+            $MAP_VIEWER.entities.remove(entity);
+        });
+        entityManager.waypointLine.forEach((entity) => {
+            $MAP_VIEWER.entities.remove(entity);
+        });
+
+        entityManager = {
+            waypointPost: [],
+            waypointPoint: [],
+            waypointLine: [],
+        }
+
+        drawWaypoint();
+    };
+
+    function drawWaypoint() {
+        commands.forEach((command, index) => {
+            let point1 = Cesium.Cartesian3.fromDegrees(
+                command.longitude,
+                command.latitude,
+            );
+
+            let point2 = Cesium.Cartesian3.fromDegrees(
+                command.longitude,
+                command.latitude,
+                droneStatus.homeAlt + command.altitude,
+            );
+
+            // waypoint 기둥 그리기
+            let waypointPost = $MAP_VIEWER.entities.add({
+                polyline: {
+                    positions: [point1, point2],
+                    width: 2,
+                    color: Cesium.Color.RED,
+                },
+            });
+
+            entityManager.waypointPost.push(waypointPost);
+
+            let waypointPoint = $MAP_VIEWER.entities.add({
+                position: point2,
+                point: {
+                    pixelSize: 15,
+                    color: Cesium.Color.YELLOW,
+                },
+            });
+            entityManager.waypointPoint.push(waypointPoint);
+
+            //index가 1 이상이면 포인트 간에 점선으로 라인을 그린다.
+            if (index > 0) {
+                let line = $MAP_VIEWER.entities.add({
+                    polyline: {
+                        positions: [point2, entityManager.waypointPoint[index - 1].position.getValue()],
+                        width: 2,
+                        material: new Cesium.PolylineDashMaterialProperty({
+                            color: Cesium.Color.YELLOW,
+                        }),
+                    },
+                });
+                entityManager.waypointLine.push(line);
+            }
+
+        });
+    }
+
+    function delCommand(index) {
+        console.log(index);
+        commands.splice(index, 1);
+        commands = commands;
+        drawWaypoint();
+    }
+
+    function sendCommands() {
+        console.log(commands);
+        // fetch($DRONEKIT_API + "send_commands/" + encodeURIComponent(droneID), {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //     },
+        //     body: JSON.stringify({
+        //         commands: commands,
+        //     }),
+        // })
+        //     .then((response) => response.json())
+        //     .then((data) => {
+        //         console.log(data);
+        //     })
+        //     .catch((error) => {
+        //         console.error("Error:", error);
+        //     });
     }
 </script>
 
 {#if showStatus === true}
     <div style="width:400px">
         <div class="container">
-            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+            <div class="row gray-translucent-bg">
                 <div class="col">드론ID : {droneID}</div>
             </div>
-            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+            <div class="row black-translucent-bg">
                 <div class="container" style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;">
-                    <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
+                    <div class="row gray-translucent-bg">
                         <div class="col">배터리</div>
                         <div class="col">GPS</div>
                         <div class="col">Telemetry</div>
@@ -488,10 +599,10 @@
     <!-- 시점 패널 시작 -->
     <div style="width:400px" class="status-layer">
         <div class="container">
-            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+            <div class="row gray-translucent-bg">
                 <div class="col">시점제어 ({droneID})</div>
             </div>
-            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+            <div class="row black-translucent-bg">
                 <div class="container p-0">
                     <div class="row g-1">
                         <div class="col">
@@ -512,10 +623,10 @@
     <!-- 명령 패널 시작 -->
     <div style="width:400px" class="status-layer">
         <div class="container">
-            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+            <div class="row gray-translucent-bg">
                 <div class="col">제어명령 ({droneID})</div>
             </div>
-            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+            <div class="row black-translucent-bg">
                 <div class="container p-0">
                     <div class="row g-1">
                         <div class="col">
@@ -547,10 +658,10 @@
     <!-- 비행계획 패널 시작 -->
     <div style="width:400px" class="status-layer">
         <div class="container">
-            <div class="row" style="color:white;background:rgba(50,50,50,0.8);padding:3px;text-align:center">
+            <div class="row gray-translucent-bg">
                 <div class="col">비행계획 ({droneID})</div>
             </div>
-            <div class="row" style="color:white;background:rgba(0,0,0,0.8);padding:5px;text-align:center">
+            <div class="row black-translucent-bg">
                 <div class="container p-0">
                     <div class="row g-1">
                         <div class="col">
@@ -561,7 +672,7 @@
 {/if}
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={takeoff}>계획전송</button>
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={sendCommands}>계획전송</button>
                         </div>
                         <div class="col">
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={land}>비행시작</button>
@@ -617,4 +728,102 @@
             </div>
         </div>
     </div>
+
+
+
+
+{#if planningMode === true}
+    <div class="footer black-translucent-bg" id="list-command" style="height: 170px;padding-top:10px">
+        <div class="table-responsive d-flex justify-content-center">
+            <table class="table" style="width:80%">
+              <thead>
+                <tr>
+                    <th class="align-middle p-0 gray-translucent-bg">No</th>
+                    <th class="align-middle p-0 gray-translucent-bg">Commnad</th>
+                    <th class="align-middle p-0 gray-translucent-bg">Delay</th>
+                    <th class="align-middle p-0 gray-translucent-bg">Latitude</th>
+                    <th class="align-middle p-0 gray-translucent-bg">Longitude</th>
+                    <th class="align-middle p-0 gray-translucent-bg">altitude</th>
+                    <th class="align-middle p-0 gray-translucent-bg">고도타입</th>
+                    <th class="align-middle p-0 gray-translucent-bg">삭제</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- 반복되는 행들 -->
+{#each commands as command, index}
+                <tr>
+                    <td class="align-middle p-0 black-translucent-bg">{index+1}</td>
+                    <td class="align-middle p-0 black-translucent-bg">
+                        <select name="command" style="width:100%;height:100%" bind:value={command.command}>
+                            <option value="waypoint" selected>waypoint</option>
+                            <option value="takeoff">takeoff</option>
+                            <option value="land">land</option>
+                        </select>
+                    </td>
+                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay}></td>
+                    <td class="align-middle p-0 black-translucent-bg">{command.latitude}</td>
+                    <td class="align-middle p-0 black-translucent-bg">{command.longitude}</td>
+                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude}></td>
+                    <td class="align-middle p-0 black-translucent-bg">
+                        <select name="altitudeType" style="width:100%;height:100%" bind:value={command.altitudeType}>
+                            <option value="relative" selected>relative</option>
+                            <option value="absolute">absolute</option>
+                            <option value="terrain">terrain</option>
+                        </select>
+                    </td>
+                    <td class="align-middle p-0 black-translucent-bg"><button type="button" class="btn btn-secondary" on:click={() => delCommand(index)}>삭제</button></td>
+                </tr>
+{/each}
+                <!-- 추가 행들 -->
+              </tbody>
+            </table>
+        </div>
+    </div>
 {/if}
+
+
+{/if}
+
+<style>
+.footer {
+    position: fixed; /* 고정 위치 지정 */
+    bottom: 0; /* 하단에 위치 */
+    left: 0; /* 왼쪽에 위치, 화면 전체 너비를 채우고 싶다면 right: 0;도 추가하세요 */
+    width: 100%; /* 화면 전체 너비를 채움 */
+    background-color: #f8f9fa; /* 배경 색상 */
+    text-align: center; /* 텍스트 가운데 정렬 */
+    padding: 10px 0; /* 상하 패딩 */
+}
+
+.black-translucent-bg {
+    color:white;
+    background:rgba(0,0,0,0.8);
+    padding:5px;
+    text-align:center
+}
+
+.gray-translucent-bg {
+    color:white;
+    background:rgba(50,50,50,0.8);
+    padding:3px;
+    text-align:center;
+}
+
+
+.table-responsive tbody {
+  display: block;
+  max-height: 120px; /* 원하는 높이 설정 */
+  overflow-y: auto;
+}
+
+.table-responsive thead, .table-responsive tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table-responsive thead {
+  width: calc(100% - 1em); /* 스크롤바 너비 조정 */
+}
+</style>
+

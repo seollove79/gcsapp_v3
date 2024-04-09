@@ -147,11 +147,21 @@
 			let guidedPopup = document.getElementById("guidedPopup");
 			guidedPopup.style.display = "none";
 
+			// 클릭한 곳 좌표 가져오기
 			if($SELECTED_DRONE_OBJECT === null || $SELECTED_DRONE_OBJECT === undefined) {
 				return;
 			} else {
-				$SELECTED_DRONE_OBJECT.droneStatus.planningMode = false;
-				$SELECTED_DRONE_OBJECT.droneStatus.makeFlightPlan();
+				if($SELECTED_DRONE_OBJECT.droneStatus.planningMode === true) {
+					let ray = $MAP_VIEWER.camera.getPickRay(click.position);
+					let cartesian = $MAP_VIEWER.scene.globe.pick(
+						ray,
+						$MAP_VIEWER.scene,
+					);
+					let cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+					let longitude = Cesium.Math.toDegrees(cartographic.longitude);
+					let latitude = Cesium.Math.toDegrees(cartographic.latitude);
+					$SELECTED_DRONE_OBJECT.droneStatus.makeFlightPlan(latitude, longitude);
+				}
 			}
 		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 	}
