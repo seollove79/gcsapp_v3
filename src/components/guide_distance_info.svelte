@@ -12,7 +12,7 @@
 
     async function gotoLocation() {
         $SHOW_GUIDE_DISTANCE_INFO = true;
-        let homeAlt = $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.homeAlt;
+        let homeAlt = $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().homeAlt;
         if (distance === null || distance === "") {
             alert("지면과의 거리를 입력하세요.");
             return;

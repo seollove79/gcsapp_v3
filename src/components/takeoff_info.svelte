@@ -8,7 +8,6 @@
 
     async function takeoff() {
         $SHOW_TAKEOFF_INFO = true;
-        console.log($SHOW_TAKEOFF_INFO);
         if (takeoffAlt === null || takeoffAlt === "") {
             alert("이륙고도를 입력해주세요.");
             return;
@@ -36,7 +35,6 @@
             }
 
             const data = await response.json();
-            console.log(data);
 
             if (data.status === "start takeoff") {
                 closeWindow();

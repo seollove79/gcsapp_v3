@@ -2,7 +2,7 @@
     import * as Cesium from "cesium";
     import { SHOW_GUIDE_ALT_INFO, SELECTED_DRONE, DRONEKIT_API, SELECTED_DRONE_OBJECT, MAP_VIEWER} from "../store";
     
-    let guideAlt = $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.alt;
+    let guideAlt = $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().alt;
     export let latitude = 0;
     export let longitude = 0;
     export let entityManager = null;
@@ -12,7 +12,8 @@
 
     async function gotoLocation() {
         $SHOW_GUIDE_ALT_INFO = true;
-        let homeAlt = $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.homeAlt;
+        let homeAlt = $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().homeAlt;
+        console.log(homeAlt);
         if (guideAlt === null || guideAlt === "") {
             alert("가이드모드 고도를 입력하세요.");
             return;

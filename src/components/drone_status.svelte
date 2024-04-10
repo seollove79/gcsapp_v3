@@ -60,6 +60,10 @@
         homeAlt: 0,
         calSLAlt: 0,
     };
+    
+    export function callDroneStatus() {
+        return droneStatus;
+    }
 
     let targetAltitude = 10;
     let entityManager = {
@@ -69,19 +73,7 @@
     };
 
     let commands = [];
-    // name이 변경될 때만 반응하는 함수
-    let prevCommands = JSON.stringify(commands);
-
-    function handleCommandsChange() {
-        console.log("commands changed");
-        const currentCommands = JSON.stringify(commands);
-        if (currentCommands !== prevCommands) {
-            drawWaypoint();
-            prevCommands = currentCommands;
-        }
-    }
-
-    $: handleCommandsChange();    
+    
 
     function getDroneStatus() {
         let homeAlt=0;
@@ -517,7 +509,6 @@
     }
 
     function delCommand(index) {
-        console.log(index);
         commands.splice(index, 1);
         commands = commands;
         drawWaypoint();

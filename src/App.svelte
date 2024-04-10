@@ -109,7 +109,7 @@
 					let point2 = Cesium.Cartesian3.fromDegrees(
 						longitude,
 						latitude,
-						$SELECTED_DRONE_OBJECT.droneStatus.droneStatus.homeAlt + $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.alt,
+						$SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().homeAlt + $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().alt,
 					);
 
 
@@ -130,7 +130,7 @@
 						},
 					});
 
-					gotoLocation(latitude, longitude, $SELECTED_DRONE_OBJECT.droneStatus.droneStatus.alt, "relative");
+					gotoLocation(latitude, longitude, $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().alt, "relative");
 
 				};
 
@@ -185,9 +185,7 @@
 			if (!response.ok) {
 				throw new Error("서버 에러: " + response.statusText);
 			}
-
 			const data = await response.json();
-			console.log(data);
 		} catch (error) {
 			console.error("Error:", error);
 		} finally {
