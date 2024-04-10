@@ -533,6 +533,11 @@
         //         console.error("Error:", error);
         //     });
     }
+
+    function handleChangeCommand() {
+        commands = commands;
+        drawWaypoint();
+    }
 </script>
 
 {#if showStatus === true}
@@ -770,7 +775,7 @@
                     <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay}></td>
                     <td class="align-middle p-0 black-translucent-bg">{command.latitude}</td>
                     <td class="align-middle p-0 black-translucent-bg">{command.longitude}</td>
-                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude}></td>
+                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude} on:keyup={handleChangeCommand}></td>
                     <td class="align-middle p-0 black-translucent-bg">
                         <select name="altitudeType" style="width:100%;height:100%" bind:value={command.altitudeType}>
                             <option value="relative" selected>relative</option>
