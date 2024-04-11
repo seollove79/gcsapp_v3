@@ -167,9 +167,6 @@
 
                 droneStatus = droneStatus;
                 viewDrone();
-                if (showStatus === true) {
-                    //moveMap();
-                }
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -366,59 +363,6 @@
         });
     }
 
-
-    function moveMap() {
-        var dronePosition = Cesium.Cartesian3.fromDegrees(
-            droneStatus.lng,
-            droneStatus.lat,
-            droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
-        );
-
-        // 드론의 현재 위치를 바라보는 카메라의 orientation 계산
-        var hpr = new Cesium.HeadingPitchRange(
-            Cesium.Math.toRadians(droneStatus.yaw),
-            droneStatus.pitch,
-            10, // 5미터 뒤에서 드론을 바라봄
-        );
-
-        var cameraPosition = $MAP_VIEWER.camera.positionWC;
-        var distance = Cesium.Cartesian3.distance(
-            cameraPosition,
-            dronePosition,
-        );
-
-        // 거리가 10미터 이상 차이가 나면 카메라 이동
-        if (distance > 20) {
-            $MAP_VIEWER.camera.flyTo({
-                destination: dronePosition,
-                orientation: hpr,
-                duration: 2,
-                easingFunction: Cesium.EasingFunction.LINEAR_NONE,
-                complete: function () {
-                    // 카메라가 목적지에 도착한 후, 드론 뒤로 5미터 이동한 위치를 다시 계산하여 카메라를 조정
-                    $MAP_VIEWER.camera.lookAt(
-                        dronePosition,
-                        new Cesium.HeadingPitchRange(
-                            Cesium.Math.toRadians(droneStatus.yaw),
-                            0,
-                            10,
-                        ),
-                    );
-                },
-            });
-        } else {
-            //카메라가 이미 드론과 가까운 경우, 바로 lookAt을 사용하여 조정
-            $MAP_VIEWER.camera.lookAt(
-                dronePosition,
-                new Cesium.HeadingPitchRange(
-                    Cesium.Math.toRadians(Math.floor(droneStatus.yaw)),
-                    0,
-                    10,
-                ),
-            );
-        }
-    }
-
     function takeoff() {
         $SHOW_TAKEOFF_INFO = true;
     }
@@ -514,24 +458,30 @@
         drawWaypoint();
     }
 
-    function sendCommands() {
-        console.log(commands);
-        // fetch($DRONEKIT_API + "send_commands/" + encodeURIComponent(droneID), {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({
-        //         commands: commands,
-        //     }),
-        // })
-        //     .then((response) => response.json())
-        //     .then((data) => {
-        //         console.log(data);
-        //     })
-        //     .catch((error) => {
-        //         console.error("Error:", error);
-        //     });
+    async function sendCommands() {
+        try {
+            const response = await fetch($DRONEKIT_API + "goto_location/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    drone_id: drone_id,
+                    waypoints: commands,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("서버 에러: " + response.statusText);
+            }
+
+            const data = await response.json();
+            console.log(data);
+            closeWindow();
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+        }
     }
 
     function handleChangeCommand() {
