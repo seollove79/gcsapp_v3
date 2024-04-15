@@ -459,14 +459,16 @@
     }
 
     async function sendCommands() {
+        
+        console.log(commands);
         try {
-            const response = await fetch($DRONEKIT_API + "goto_location/", {
+            const response = await fetch($DRONEKIT_API + "upload_mission/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    drone_id: drone_id,
+                    drone_id: droneID,
                     waypoints: commands,
                 }),
             });
@@ -476,8 +478,68 @@
             }
 
             const data = await response.json();
-            console.log(data);
-            closeWindow();
+            if(data.status === "success") {
+                planningMode = false;
+            } else {
+                alert("비행계획 전송에 실패했습니다.");
+            };
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+        }
+    }
+
+    // 기체에서 미션 가져오기
+    async function downloadMission() {
+        try {
+            const response = await fetch($DRONEKIT_API + "download_mission/" + encodeURIComponent(droneID), {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("서버 에러: " + response.statusText);
+            }
+
+            const data = await response.json();
+
+            console.log(data.mission);
+            let newCommands = [];
+            data.mission.forEach((command) => {
+                let commandStr = "";
+                let altitudeType = "";
+                switch(command.command) {
+                    case 16:
+                        commandStr = "waypoint";
+                        break;
+                    case 21:
+                        commandStr = "land";
+                        break;
+                }
+
+                switch(command.altitudeType) {
+                    case 3:
+                        altitudeType = "relative";
+                        break;
+                    case 0:
+                        altitudeType = "absolute";
+                        break;
+                }
+                newCommands.push({
+                    command: commandStr,
+                    latitude: command.x,
+                    longitude: command.y,
+                    altitude: command.z,
+                    altitudeType: altitudeType,
+                    radius: command.param2,
+                    delay: command.param1,
+                });
+            });
+
+            commands = newCommands;
+            drawWaypoint();
         } catch (error) {
             console.error("Error:", error);
         } finally {
@@ -637,7 +699,18 @@
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={sendCommands}>계획전송</button>
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={land}>비행시작</button>
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("AUTO")}>자동비행시작</button>
+                        </div>
+                    </div>
+                    <div class="row g-1" style="margin-top:5px">
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%;" on:click={downloadMission} id="btnChangePlanningMode">읽어오기</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={sendCommands}>화면초기화</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("GUIDED")}>자동비행중지</button>
                         </div>
                     </div>
                     <div class="row g-1" style="margin-top:5px">
@@ -718,7 +791,6 @@
                     <td class="align-middle p-0 black-translucent-bg">
                         <select name="command" style="width:100%;height:100%" bind:value={command.command}>
                             <option value="waypoint" selected>waypoint</option>
-                            <option value="takeoff">takeoff</option>
                             <option value="land">land</option>
                         </select>
                     </td>
