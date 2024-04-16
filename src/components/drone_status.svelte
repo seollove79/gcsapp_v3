@@ -372,11 +372,22 @@
     }
 
     export function makeFlightPlan(latitude, longitude) {
+        let targetAltitude = 0;
+        if (missionAltType === "relative" || missionAltType === "absolute") {
+            targetAltitude = missionAlt;
+        } else if (missionAltType === "terrain") {
+            //목표지점의 해발고도를 구하고, 거리를 더해준다.
+            let cartographicPosition = Cesium.Cartographic.fromDegrees(parseFloat(longitude), parseFloat(latitude));
+            let globe = $MAP_VIEWER.scene.globe;
+            let height = globe.getHeight(cartographicPosition);
+            targetAltitude = height + missionAlt;
+        }
+
         commands.push({
             command: "waypoint",
             latitude: latitude,
             longitude: longitude,
-            altitude: missionAlt,
+            altitude: targetAltitude,
             altitudeType: missionAltType,
             radius: missionRadius,
             delay: 0,
@@ -409,10 +420,20 @@
                 command.latitude,
             );
 
+            let targetAltitude = 0;
+            
+            if (command.altitudeType === "relative") {
+                targetAltitude = droneStatus.homeAlt + command.altitude;
+            } else if (command.altitudeType === "absolute") {
+                targetAltitude = command.altitude;
+            } else if (command.altitudeType === "terrain") {
+                targetAltitude = command.altitude;
+            }
+            
             let point2 = Cesium.Cartesian3.fromDegrees(
                 command.longitude,
                 command.latitude,
-                droneStatus.homeAlt + command.altitude,
+                targetAltitude,
             );
 
             // waypoint 기둥 그리기
@@ -519,7 +540,7 @@
                         break;
                 }
 
-                switch(command.altitudeType) {
+                switch(command.frame) {
                     case 3:
                         altitudeType = "relative";
                         break;

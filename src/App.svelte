@@ -40,8 +40,8 @@
 		let mapOptions = new vw.MapOptions(
 			vw.BasemapType.GRAPHIC,
 			"",
-			eval(controlDensity),
-			eval(interactionDensity),
+			vw.DensityType.FULL,
+        	vw.DensityType.BASIC,
 			false,
 			new vw.CameraPosition(
 				new vw.CoordZ(126.621259, 37.520995, 500),

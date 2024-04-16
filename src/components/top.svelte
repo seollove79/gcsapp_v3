@@ -1,5 +1,12 @@
 <script>
+    import LeftMenu from "./left_menu.svelte";
 
+    let showLeftMenu=false;
+
+    function clickMenu() {
+        console.log("clickMenu");
+        showLeftMenu=!showLeftMenu;
+    }
 </script>
 
 <style>
@@ -18,7 +25,7 @@
 <div class="top-layer">
     <div class="container-fluid">
         <div class="row">
-            <div class="col d-flex align-items-center"><i class="bi bi-justify" style="font-size:45px;color:white"></i> <span style="font-size:20px;margin-left:10px;color:white;">INTOSKY Multipurpose Ground Control Station</span></div>
+            <div class="col d-flex align-items-center"><i class="bi bi-justify" style="font-size:45px;color:white" on:click={clickMenu}></i> <span style="font-size:20px;margin-left:10px;color:white;">INTOSKY Multipurpose Ground Control Station</span></div>
             <div class="col d-flex align-items-center justify-content-end">
                 <div class="input-group" style="width:400px;">
                     <div class="input-group-prepend">
@@ -31,3 +38,7 @@
         </div>
     </div>
 </div>
+
+{#if showLeftMenu===true}
+<LeftMenu />
+{/if}
