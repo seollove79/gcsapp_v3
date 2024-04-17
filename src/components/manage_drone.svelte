@@ -2,13 +2,12 @@
 <script>
     import DroneLabel from "./drone_label.svelte";
     import DroneStatus from "./drone_status.svelte";
-    import { DRONEKIT_API, SELECTED_DRONE, SELECTED_DRONE_OBJECT } from "../store";
+    import { DRONEKIT_API, SELECTED_DRONE, SELECTED_DRONE_OBJECT, DRONES } from "../store";
     import { create_bidirectional_transition } from "svelte/internal";
 
     let modal = null;
     let modalConnecting = false;
     let modalError = null;
-    export let drones = [];
 
     function openModal() {
         modalConnecting = false;
@@ -73,7 +72,6 @@
             }
 
             const data = await response.json();
-            console.log(data);
             if (data.status === "Connected") {
                 alert("드론이 연결되었습니다.");
                 addDrone(formData.droneID);
@@ -98,27 +96,27 @@
     }
 
     function addDrone(droneID) {
-        if (!drones.some(drone => drone.droneID === droneID)) {
-            drones.push(
+        if (!$DRONES.some(drone => drone.droneID === droneID)) {
+            $DRONES.push(
                 {
                     droneID: droneID,
                     droneLabel: null,
                     droneStatus: null,
                 },
             );
-            drones = drones;
+            $DRONES = $DRONES;
         }
     }
 
     function selectDrone(droneID) {
-        drones.forEach(drone => {
+        $DRONES.forEach(drone => {
             if (drone.droneID === droneID) {
                 drone.droneLabel.setSelected(true);
                 if (drone.droneStatus.showStatus) {
                     drone.droneStatus.setShowStatus(false);
                 } else {
-                    drones.forEach(drone => drone.droneStatus.setShowStatus(false));
-                    drone.droneStatus.setShowStatus(true);
+                    $DRONES.forEach(drone => drone.droneStatus.setShowStatus(false));
+                    $DRONES.droneStatus.setShowStatus(true);
                 }
                 $SELECTED_DRONE = droneID;
                 $SELECTED_DRONE_OBJECT = drone;
@@ -133,7 +131,7 @@
     <div class="container g-0">
         <div class="row g-0">
             <div class="col d-flex">
-                {#each drones as drone}
+                {#each $DRONES as drone}
                 <DroneLabel droneID={drone.droneID} bind:this={drone.droneLabel} onSelect={selectDrone} />
                 {/each}
             </div>
@@ -152,7 +150,7 @@
     </div>
 </div>
 <div class="status-layer" style="gap:6px">
-    {#each drones as drone}
+    {#each $DRONES as drone}
     <DroneStatus droneID={drone.droneID} bind:this={drone.droneStatus}/>
 	{/each}
 </div>

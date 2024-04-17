@@ -40,3 +40,6 @@ export const PLANNING_MODE = writable(planningMode)
 
 let slAltOffset = 0;
 export const SL_ALT_OFFSET = writable(slAltOffset)
+
+let drones = [];
+export const DRONES = writable(drones)
