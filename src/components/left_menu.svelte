@@ -1,22 +1,52 @@
 <script>
+import { DRONES, SHOW_TAKEOFF_INFO_ALL } from "../store";
 
+function takeoffAll() {
+    if ($DRONES.length === 0) {
+        alert("연결된 드론이 없습니다.");
+        return;
+    }
+    $SHOW_TAKEOFF_INFO_ALL = true;
+}
+
+function changeAuto() {
+    if ($DRONES.length === 0) {
+        alert("연결된 드론이 없습니다.");
+        return;
+    }
+
+    $DRONES.forEach(async (drone) => {
+        drone.droneStatus.changeFlightMode("AUTO");
+    });
+}
+
+function stopAuto() {
+    if ($DRONES.length === 0) {
+        alert("연결된 드론이 없습니다.");
+        return;
+    }
+
+    $DRONES.forEach(async (drone) => {
+        drone.droneStatus.changeFlightMode("GUIDED");
+    });
+}
 </script>
 
 <div class="fixed-div black-translucent-bg">
     <div class="container">
         <div class="row">
             <div class="col">
-                <button class="btn btn-secondary">자동비행시작(전체)</button>
+                <button class="btn btn-secondary" on:click={changeAuto}>자동비행시작(전체)</button>
             </div>
         </div>
         <div class="row">
             <div class="col">
-                <button class="btn btn-secondary" style="margin-top:3px">자동비행중지(전체)</button>
+                <button class="btn btn-secondary" style="margin-top:3px" on:click={stopAuto}>자동비행중지(전체)</button>
             </div>
         </div>
         <div class="row">
             <div class="col">
-                <button class="btn btn-secondary" style="margin-top:3px">이륙(전체)</button>
+                <button class="btn btn-secondary" style="margin-top:3px" on:click={takeoffAll}>시동&이륙(전체)</button>
             </div>
         </div>
     </div>

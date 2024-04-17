@@ -116,7 +116,7 @@
                     drone.droneStatus.setShowStatus(false);
                 } else {
                     $DRONES.forEach(drone => drone.droneStatus.setShowStatus(false));
-                    $DRONES.droneStatus.setShowStatus(true);
+                    drone.droneStatus.setShowStatus(true);
                 }
                 $SELECTED_DRONE = droneID;
                 $SELECTED_DRONE_OBJECT = drone;

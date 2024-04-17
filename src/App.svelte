@@ -3,6 +3,7 @@
 	import Top from "./components/top.svelte";
 	import ManageDrone from "./components/manage_drone.svelte";
 	import TakeoffInfo from "./components/takeoff_info.svelte";
+	import TakeoffInfoAll from "./components/takeoff_info_all.svelte";
 	import GuideAltInfo from "./components/guide_alt_info.svelte";
 	import GuideDistanceInfo from "./components/guide_distance_info.svelte";
 
@@ -12,6 +13,7 @@
 		SELECTED_DRONE,
 		DRONEKIT_API,
 		SHOW_TAKEOFF_INFO,
+		SHOW_TAKEOFF_INFO_ALL,
 		SHOW_GUIDE_ALT_INFO,
 		SHOW_GUIDE_DISTANCE_INFO,
 		SELECTED_DRONE_OBJECT,
@@ -222,6 +224,10 @@
 
 {#if $SHOW_TAKEOFF_INFO===true}
 	<TakeoffInfo />
+{/if}
+
+{#if $SHOW_TAKEOFF_INFO_ALL===true}
+	<TakeoffInfoAll />
 {/if}
 
 {#if $SHOW_GUIDE_ALT_INFO===true}

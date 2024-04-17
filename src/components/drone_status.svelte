@@ -211,7 +211,7 @@
             });
     }
 
-    async function changeFlightMode(newMode) {
+    export async function changeFlightMode(newMode) {
         try {
             const response = await fetch($DRONEKIT_API + "change_mode/", {
                 method: "POST",
@@ -263,6 +263,16 @@
                     uri: "/scene.gltf",
                     scale: $DRONE_MODEL_SCALE,
                 },
+                label: {
+                    text: droneID,
+                    font: "14px sans-serif",
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    fillColor: Cesium.Color.WHITE,
+                    outlineColor: Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                    horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                    verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                    pixelOffset: new Cesium.Cartesian2(0, -50),},
             });
         }
     }

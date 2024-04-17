@@ -29,6 +29,9 @@ export const SELECTED_DRONE_OBJECT = writable(selectedDroneObject)
 let showTakeoffInfo = false;
 export const SHOW_TAKEOFF_INFO = writable(showTakeoffInfo)
 
+let showTakeoffInfoAll = false;
+export const SHOW_TAKEOFF_INFO_ALL = writable(showTakeoffInfoAll)
+
 let showGuideAltInfo = false;
 export const SHOW_GUIDE_ALT_INFO = writable(showGuideAltInfo)
 
