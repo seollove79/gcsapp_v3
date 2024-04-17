@@ -14,6 +14,11 @@
                 <button class="btn btn-secondary" style="margin-top:3px">자동비행중지(전체)</button>
             </div>
         </div>
+        <div class="row">
+            <div class="col">
+                <button class="btn btn-secondary" style="margin-top:3px">이륙(전체)</button>
+            </div>
+        </div>
     </div>
 </div>
 
