@@ -23,6 +23,7 @@
     }
 
     import * as Cesium from "cesium";
+    import Message from "./message.svelte";
 
     let drone = null;
     let intervalInstance = null;
@@ -90,6 +91,7 @@
             .then((data) => {
                 let voltage = data["Battery"].split(",")[0];
                 voltage = voltage.split("=")[1];
+                voltage = parseFloat(voltage).toFixed(2);
 
                 let level = data["Battery"].split(",")[2];
                 level = level.split("=")[1];
@@ -144,8 +146,8 @@
                 calSLAlt = height + parseFloat(data["Alt"]); //홈포지션의 해수면고도 + 상대고도
                
                 droneStatus = {
-                    airSpeed: parseFloat(data["AirSpeed"]).toFixed(2),
-                    groundSpeed: parseFloat(data["GroundSpeed"]).toFixed(2),
+                    airSpeed: parseFloat(data["AirSpeed"]).toFixed(1),
+                    groundSpeed: parseFloat(data["GroundSpeed"]).toFixed(1),
                     voltage: voltage + "V",
                     level: level + "%",
                     mode: data["Mode"],
@@ -155,8 +157,8 @@
                     ekf: ekf_ok,
                     lat: data["Lat"],
                     lng: data["Lng"],
-                    alt: data["Alt"],
-                    slAlt: data["SL_Alt"],
+                    alt: parseFloat(data["Alt"]).toFixed(1),
+                    slAlt: parseFloat(data["SL_Alt"]).toFixed(1),
                     roll: data["Roll"],
                     pitch: data["Pitch"],
                     yaw: data["Yaw"],
@@ -598,12 +600,12 @@
                     </div>
                     <div class="row" style="padding:5px 0 5px 0">
                         <div class="col">
-                            {droneStatus.voltage}<br />{droneStatus.level}
+                            {droneStatus.voltage}({droneStatus.level})
                         </div>
                         <div class="col">
-                            {droneStatus.gps}<br />{droneStatus.gpsFix}
+                            {droneStatus.gps}({droneStatus.gpsFix})
                         </div>
-                        <div class="col">99%<br />25%</div>
+                        <div class="col">99%(25%)</div>
                     </div>
                 </div>
                 <div class="container">
@@ -621,12 +623,8 @@
                                     <div class="col">고도 (m)</div>
                                 </div>
                                 <div class="row" style="padding:5px 0 5px 0">
-                                    <div class="col">
-                                        상대고도<br />{droneStatus.alt}
-                                    </div>
-                                    <div class="col">
-                                        해수면고도<br />{droneStatus.slAlt}
-                                    </div>
+                                    <div class="col">{droneStatus.alt}(상대)</div>
+                                    <div class="col">{droneStatus.slAlt}(해발)</div>
                                 </div>
                             </div>
                         </div>
@@ -636,12 +634,8 @@
                                     <div class="col">속도 (m/s)</div>
                                 </div>
                                 <div class="row" style="padding:5px 0 5px 0">
-                                    <div class="col">
-                                        Air<br />{droneStatus.airSpeed}
-                                    </div>
-                                    <div class="col">
-                                        Ground<br />{droneStatus.groundSpeed}
-                                    </div>
+                                    <div class="col">{droneStatus.airSpeed}(Air)</div>
+                                    <div class="col">{droneStatus.groundSpeed}(Ground)</div>
                                 </div>
                             </div>
                         </div>
@@ -694,7 +688,7 @@
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={land}>착륙</button>
                         </div>
                     </div>
-                    <div class="row g-1" style="margin-top:5px">
+                    <div class="row g-1" style="margin-top:0px">
                         <div class="col">
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("LOITER")}>LOITER</button>
                         </div>
@@ -733,7 +727,7 @@
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("AUTO")}>자동비행시작</button>
                         </div>
                     </div>
-                    <div class="row g-1" style="margin-top:5px">
+                    <div class="row g-1" style="margin-top:0px">
                         <div class="col">
                             <button type="button" class="btn btn-secondary" style="width:100%;" on:click={downloadMission} id="btnChangePlanningMode">읽어오기</button>
                         </div>
@@ -794,9 +788,7 @@
             </div>
         </div>
     </div>
-
-
-
+    <Message droneID={droneID} />
 
 {#if planningMode === true}
     <div class="footer black-translucent-bg" id="list-command" style="height: 170px;padding-top:10px">

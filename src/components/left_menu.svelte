@@ -56,7 +56,7 @@ function stopAuto() {
 .fixed-div {
     position: fixed;  /* 고정 위치 설정 */
     top: 50px;           /* 상단에서 0px 위치 */
-    left: 5px;          /* 좌측에서 0px 위치 */
+    left: 0;          /* 좌측에서 0px 위치 */
     width: 200px;     /* 너비 200px */
     background-color: #f4f4f4; /* 배경 색상 */
     padding: 5px;    /* 내부 여백 */
