@@ -283,15 +283,19 @@
         var dronePosition = Cesium.Cartesian3.fromDegrees(
             droneStatus.lng,
             droneStatus.lat,
-            droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET,
+            parseFloat(droneStatus.slAlt) + $DRONE_ALTITUDE_OFFSET,
         );
+
+        
 
         // 드론의 수직 위치에서 20미터 위를 계산
         var cameraPosition = Cesium.Cartesian3.fromDegrees(
             droneStatus.lng,
             droneStatus.lat,
-            droneStatus.slAlt + $DRONE_ALTITUDE_OFFSET + 20, // 드론 위치 + 20미터
+            parseFloat(droneStatus.slAlt) + $DRONE_ALTITUDE_OFFSET + 20, // 드론 위치 + 20미터
         );
+
+        
 
         // 카메라가 드론을 바라보는 방향으로 orientation을 계산
         var hpr = new Cesium.HeadingPitchRange(
