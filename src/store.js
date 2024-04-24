@@ -20,6 +20,9 @@ export const DRONE_MODEL_SCALE = writable(droneModelScale)
 let apiCallInterval = 2000;
 export const API_CALL_INTERVAL = writable(apiCallInterval)
 
+let messageCallInterval = 1000;
+export const MESSAGE_CALL_INTERVAL = writable(messageCallInterval)
+
 let selectedDrone = null;
 export const SELECTED_DRONE = writable(selectedDrone)
 
