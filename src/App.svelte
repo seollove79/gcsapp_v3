@@ -111,8 +111,10 @@
 					let point2 = Cesium.Cartesian3.fromDegrees(
 						longitude,
 						latitude,
-						$SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().homeAlt + $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().alt,
+						parseFloat($SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().homeAlt) + parseFloat($SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().alt),
 					);
+
+					
 
 
 					// 선 그리기

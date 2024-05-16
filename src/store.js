@@ -17,7 +17,7 @@ export const DRONE_ALTITUDE_OFFSET = writable(droneAltitudeOffset)
 let droneModelScale = 0.003;
 export const DRONE_MODEL_SCALE = writable(droneModelScale)
 
-let apiCallInterval = 2000;
+let apiCallInterval = 500;
 export const API_CALL_INTERVAL = writable(apiCallInterval)
 
 let messageCallInterval = 1000;

@@ -14,6 +14,8 @@
         $SHOW_GUIDE_ALT_INFO = true;
         let homeAlt = $SELECTED_DRONE_OBJECT.droneStatus.callDroneStatus().homeAlt;
         console.log(homeAlt);
+
+
         if (guideAlt === null || guideAlt === "") {
             alert("가이드모드 고도를 입력하세요.");
             return;
@@ -32,7 +34,7 @@
         let point2 = Cesium.Cartesian3.fromDegrees(
             longitude,
             latitude,
-            homeAlt + guideAlt,
+            homeAlt + parseFloat(guideAlt),
         );
 
         if (entityManager.guidedPositionLine != null) {
@@ -57,6 +59,9 @@
             },
         });
 
+        
+
+
         try {
             const response = await fetch($DRONEKIT_API + "goto_location/", {
                 method: "POST",
@@ -65,9 +70,9 @@
                 },
                 body: JSON.stringify({
                     drone_id: $SELECTED_DRONE,
-                    latitude: latitude,
-                    longitude: longitude,
-                    altitude: guideAlt.toString(),
+                    latitude: parseFloat(latitude),
+                    longitude: parseFloat(longitude),
+                    altitude: parseFloat(guideAlt),
                     method: 'relative',
                 }),
             });
