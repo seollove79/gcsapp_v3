@@ -9,6 +9,7 @@ import {
 } from "../store";
 export let droneID;
 let intervalInstance = null;
+let messageArray = [];
 
 onMount(() => {
     if (intervalInstance === null) {
@@ -42,16 +43,27 @@ async function getMessage() {
 
 
 <div class="bottom-left-layer black-translucent-bg">
-    <div style="width:100px;height:100px;">{droneID}</div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <p>{droneID}</p>
+            </div> 
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <p>Message</p>
+            </div>
+        </div>
+    </div>
 </div>
     
 <style>
 .bottom-left-layer {
     position: fixed;   /* 화면에 고정 */
-    left: 5;           /* 화면의 왼쪽 가장자리에 위치 */
-    bottom: 0;         /* 화면의 아래쪽 가장자리에 위치 */
-    width: 200px;      /* 레이어의 너비 */
-    height: 100px;     /* 레이어의 높이 */
+    right: 10px;           /* 화면의 왼쪽 가장자리에 위치 */
+    bottom: 10px;         /* 화면의 아래쪽 가장자리에 위치 */
+    width: 400px;      /* 레이어의 너비 */
+    height: 200px;     /* 레이어의 높이 */
     z-index: 1000;     /* 다른 요소 위에 위치하도록 z-index 설정 */
 }
 
