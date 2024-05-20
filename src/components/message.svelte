@@ -9,7 +9,7 @@ import {
 } from "../store";
 export let droneID;
 let intervalInstance = null;
-let messageArray = [];
+let data = null;
 
 onMount(() => {
     if (intervalInstance === null) {
@@ -30,9 +30,8 @@ async function getMessage() {
             throw new Error("서버 에러: " + response.statusText);
         }
 
-        const data = await response.json();
+        data = await response.json();
         console.log(data.message);
-
     } catch (error) {
         console.error(error);
     }
@@ -44,14 +43,21 @@ async function getMessage() {
 
 <div class="bottom-left-layer black-translucent-bg">
     <div class="container">
-        <div class="row">
+        <div class="row gray-translucent-bg">
             <div class="col-12">
-                <p>{droneID}</p>
+                <p style="padding:2px">{droneID}</p>
             </div> 
         </div>
         <div class="row">
             <div class="col-12">
-                <p>Message</p>
+                <ul> 
+                    {#if data !== null}
+                        {#each data.message as message}
+                            <p>{message.name} - {message.message}</p>
+                        {/each}
+                    {/if}
+
+                </ul>
             </div>
         </div>
     </div>
@@ -70,5 +76,12 @@ async function getMessage() {
 .black-translucent-bg {
     color:white;
     background:rgba(0,0,0,0.8);
+}
+
+.gray-translucent-bg {
+    color:white;
+    background:rgba(50,50,50,0.8);
+    padding:3px;
+    text-align:center;
 }
 </style>
