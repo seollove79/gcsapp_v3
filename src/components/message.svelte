@@ -33,7 +33,7 @@ async function getMessage() {
         data = await response.json();
         
         var messageDiv = document.getElementById('message-div');
-        messageDiv.scrollTop = messageDiv.scrollHeight;
+        // messageDiv.scrollTop = messageDiv.scrollHeight;
     } catch (error) {
         console.error(error);
     }

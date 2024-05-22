@@ -803,12 +803,12 @@
     <Message droneID={droneID} />
 
 {#if planningMode === true}
-    <div class="footer black-translucent-bg" id="list-command" style="height: 170px;padding-top:10px">
+    <div class="footer black-translucent-bg" id="list-command" style="height: 200px;padding-top:10px">
         <div class="table-responsive d-flex justify-content-center">
             <table class="table" style="width:80%">
               <thead>
                 <tr>
-                    <th class="align-middle p-0 gray-translucent-bg">No</th>
+                    <th class="align-middle p-0 gray-translucent-bg" style="width:8%;">No</th>
                     <th class="align-middle p-0 gray-translucent-bg">Commnad</th>
                     <th class="align-middle p-0 gray-translucent-bg">Delay</th>
                     <th class="align-middle p-0 gray-translucent-bg">Latitude</th>
@@ -822,17 +822,17 @@
                 <!-- 반복되는 행들 -->
 {#each commands as command, index}
                 <tr>
-                    <td class="align-middle p-0 black-translucent-bg">{index+1}</td>
+                    <td class="align-middle p-0 black-translucent-bg" style="width:8%;">{index+1}</td>
                     <td class="align-middle p-0 black-translucent-bg">
                         <select name="command" style="width:100%;height:100%" bind:value={command.command}>
                             <option value="waypoint" selected>waypoint</option>
                             <option value="land">land</option>
                         </select>
                     </td>
-                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay}></td>
+                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay} style="width:50px;"></td>
                     <td class="align-middle p-0 black-translucent-bg">{command.latitude}</td>
                     <td class="align-middle p-0 black-translucent-bg">{command.longitude}</td>
-                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude} on:keyup={handleChangeCommand}></td>
+                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude} on:keyup={handleChangeCommand} style="width:50px;"></td>
                     <td class="align-middle p-0 black-translucent-bg">
                         <select name="altitudeType" style="width:100%;height:100%" bind:value={command.altitudeType}>
                             <option value="relative" selected>relative</option>
@@ -856,9 +856,9 @@
 <style>
 .footer {
     position: fixed; /* 고정 위치 지정 */
-    bottom: 0; /* 하단에 위치 */
-    left: 0; /* 왼쪽에 위치, 화면 전체 너비를 채우고 싶다면 right: 0;도 추가하세요 */
-    width: 100%; /* 화면 전체 너비를 채움 */
+    bottom: 10px; /* 하단에 위치 */
+    left: 10px;
+    width: 1000px;
     background-color: #f8f9fa; /* 배경 색상 */
     text-align: center; /* 텍스트 가운데 정렬 */
     padding: 10px 0; /* 상하 패딩 */
