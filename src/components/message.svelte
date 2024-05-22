@@ -31,7 +31,9 @@ async function getMessage() {
         }
 
         data = await response.json();
-        console.log(data.message);
+        
+        var messageDiv = document.getElementById('message-div');
+        messageDiv.scrollTop = messageDiv.scrollHeight;
     } catch (error) {
         console.error(error);
     }
@@ -41,23 +43,20 @@ async function getMessage() {
 
 
 
-<div class="bottom-left-layer black-translucent-bg">
+<div class="bottom-left-layer">
     <div class="container">
-        <div class="row gray-translucent-bg">
+        <div class="row gray-translucent-bg" style="height:30px">
             <div class="col-12">
-                <p style="padding:2px">{droneID}</p>
+                <p style="padding-left:2px">{droneID}</p>
             </div> 
         </div>
-        <div class="row">
+        <div class="row black-translucent-bg" style="height:170px;overflow-y:scroll" id="message-div">
             <div class="col-12">
-                <ul> 
-                    {#if data !== null}
-                        {#each data.message as message}
-                            <p>{message.name} - {message.message}</p>
-                        {/each}
-                    {/if}
-
-                </ul>
+                {#if data !== null}
+                    {#each data.message as message}
+                        <p style="font-size:0.8em">{message.message}</p>
+                    {/each}
+                {/if}
             </div>
         </div>
     </div>

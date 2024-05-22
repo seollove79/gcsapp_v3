@@ -130,15 +130,23 @@
                     armed = "DISARMED";
                 }
 
-                let splitHome = data["Home"].split(":");
-                splitHome = splitHome[1];
-                splitHome = splitHome.split(",");
-                let lat = splitHome[0];
-                let lon = splitHome[1];
-                let alt = splitHome[2];
-                homeLat = lat.split("=")[1];
-                homeLng = lon.split("=")[1];
-                homeAlt = alt.split("=")[1];
+                if (data["Home"] === "None") {
+                    homeLat = 0;
+                    homeLng = 0;
+                    homeAlt = 0;
+                } else {
+                    let splitHome = data["Home"].split(":");
+                    splitHome = splitHome[1];
+                    splitHome = splitHome.split(",");
+                    let lat = splitHome[0];
+                    let lon = splitHome[1];
+                    let alt = splitHome[2];
+                    homeLat = lat.split("=")[1];
+                    homeLng = lon.split("=")[1];
+                    homeAlt = alt.split("=")[1];
+                }
+
+                
 
                 let cartographicPosition = Cesium.Cartographic.fromDegrees(parseFloat(homeLng), parseFloat(homeLat));
                 let globe = $MAP_VIEWER.scene.globe;
