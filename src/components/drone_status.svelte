@@ -857,8 +857,8 @@
 .footer {
     position: fixed; /* 고정 위치 지정 */
     bottom: 10px; /* 하단에 위치 */
-    left: 10px;
-    width: 1000px;
+    margin-left: 10px;
+    right: 420px;
     background-color: #f8f9fa; /* 배경 색상 */
     text-align: center; /* 텍스트 가운데 정렬 */
     padding: 10px 0; /* 상하 패딩 */
