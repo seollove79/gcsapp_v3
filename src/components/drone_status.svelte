@@ -34,6 +34,15 @@
         showStatus = value;
     }
 
+    let doVerticalView = false;
+    let workVerticalView = null;
+
+    let doTailView = false;
+    let workTailView = null;
+
+    let doFPVView = false;
+    let workFPVView = null;    
+
     onMount(() => {
         if (intervalInstance === null) {
             intervalInstance = setInterval(getDroneStatus, $API_CALL_INTERVAL);
@@ -176,7 +185,9 @@
                 };
 
                 droneStatus = droneStatus;
-                viewDrone();
+                if (!doFPVView) {
+                    viewDrone();
+                }
             })
             .catch((error) => {
                 console.error("Error:", error);
@@ -287,23 +298,19 @@
         }
     }
 
-    export function verticalView() {
+    function verticalView() {
         var dronePosition = Cesium.Cartesian3.fromDegrees(
             droneStatus.lng,
             droneStatus.lat,
             parseFloat(droneStatus.slAlt) + $DRONE_ALTITUDE_OFFSET,
         );
 
-        
-
         // 드론의 수직 위치에서 20미터 위를 계산
         var cameraPosition = Cesium.Cartesian3.fromDegrees(
             droneStatus.lng,
             droneStatus.lat,
-            parseFloat(droneStatus.slAlt) + $DRONE_ALTITUDE_OFFSET + 20, // 드론 위치 + 20미터
+            parseFloat(droneStatus.slAlt) + $DRONE_ALTITUDE_OFFSET + 40, // 드론 위치 + 40미터
         );
-
-        
 
         // 카메라가 드론을 바라보는 방향으로 orientation을 계산
         var hpr = new Cesium.HeadingPitchRange(
@@ -315,12 +322,65 @@
         $MAP_VIEWER.camera.flyTo({
             destination: cameraPosition, // 수정된 카메라 위치
             orientation: hpr,
-            duration: 1,
+            duration: 0.3,
             easingFunction: Cesium.EasingFunction.LINEAR_NONE,
         });
+
+        // $MAP_VIEWER.camera.setView({
+        //     destination: cameraPosition, // 수정된 카메라 위치
+        //     orientation: hpr
+        // });
     }
 
-    export function tailView() {
+    export function changeDoVerticalView() {
+        doVerticalView = !doVerticalView;
+        $MAP_VIEWER.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        if (doVerticalView) {
+            verticalView();
+            doTailView = false;
+            cancelAnimationFrame(workTailView);
+            doFPVView = false;
+            clearInterval(workFPVView);
+            workVerticalView = setInterval(verticalView, 1000);
+        } else {
+            clearInterval(workVerticalView);
+        }
+    }
+
+    export function changeDoTailView() {
+        doTailView = !doTailView;
+        $MAP_VIEWER.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        if (doTailView) {
+            tailView();
+            doVerticalView = false;
+            clearInterval(workVerticalView);
+            doFPVView = false;
+            clearInterval(workFPVView);
+        } else {
+            cancelAnimationFrame(workTailView);
+        }
+    }
+
+    export function changeDoFPVView() {
+        doFPVView = !doFPVView;
+        $MAP_VIEWER.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        if (doFPVView) {
+            FPVView();
+            doVerticalView = false;
+            clearInterval(workVerticalView);
+            doTailView = false;
+            cancelAnimationFrame(workTailView);
+            workFPVView = setInterval(FPVView, 500);
+        } else {
+            clearInterval(workFPVView);
+        }
+    }
+
+    let previousPosition = null;
+    let previousHpr = null;
+    let lastUpdateTime = Date.now();
+
+    function tailView() {
         var dronePosition = Cesium.Cartesian3.fromDegrees(
             droneStatus.lng,
             droneStatus.lat,
@@ -330,59 +390,128 @@
         // 드론의 현재 위치를 바라보는 카메라의 orientation 계산
         var hpr = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(droneStatus.yaw),
-            droneStatus.pitch,
-            10, // 5미터 뒤에서 드론을 바라봄
+            Cesium.Math.toRadians(-10), // 드론을 약간 위에서 내려다보는 시점
+            10 // 10미터 뒤에서 드론을 바라봄
         );
 
-        var cameraPosition = $MAP_VIEWER.camera.positionWC;
+        $MAP_VIEWER.camera.lookAt(
+            dronePosition,
+            hpr
+        );
 
-        $MAP_VIEWER.camera.flyTo({
-            destination: dronePosition,
-            orientation: hpr,
-            duration: 1,
-            easingFunction: Cesium.EasingFunction.LINEAR_NONE,
-            complete: function () {
-                //카메라가 목적지에 도착한 후, 드론 뒤로 5미터 이동한 위치를 다시 계산하여 카메라를 조정
-                $MAP_VIEWER.camera.lookAt(
-                    dronePosition,
-                    new Cesium.HeadingPitchRange(
-                        Cesium.Math.toRadians(droneStatus.yaw),
-                        0,
-                        10,
-                    ),
-                );
-
-                // 카메라 제어를 복원
-                $MAP_VIEWER.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
-            },
-        });
+        workTailView = requestAnimationFrame(tailView);
     }
 
-    export function fpvView() {
-        var dronePosition = Cesium.Cartesian3.fromDegrees(
-            droneStatus.lng,
-            droneStatus.lat,
-            droneStatus.slAlt,
-        );
+    // function tailView() {
+    //     var dronePosition = Cesium.Cartesian3.fromDegrees(
+    //         droneStatus.lng,
+    //         droneStatus.lat,
+    //         droneStatus.calSLAlt
+    //     );
 
+    //     var hpr = new Cesium.HeadingPitchRange(
+    //         Cesium.Math.toRadians(droneStatus.yaw),
+    //         Cesium.Math.toRadians(-30), // 드론을 약간 위에서 내려다보는 시점
+    //         10 // 10미터 뒤에서 드론을 바라봄
+    //     );
+
+    //     if (!previousPosition) {
+    //         previousPosition = dronePosition;
+    //     }
+    //     if (!previousHpr) {
+    //         previousHpr = hpr;
+    //     }
+
+    //     // Using a smaller interpolation factor for smoother transition
+    //     var interpolationFactor = 0.05;
+
+    //     // Interpolating positions and hpr for smooth transition
+    //     var interpolatedPosition = Cesium.Cartesian3.lerp(previousPosition, dronePosition, interpolationFactor, new Cesium.Cartesian3());
+    //     var interpolatedHpr = new Cesium.HeadingPitchRange(
+    //         Cesium.Math.lerp(previousHpr.heading, hpr.heading, interpolationFactor),
+    //         Cesium.Math.lerp(previousHpr.pitch, hpr.pitch, interpolationFactor),
+    //         Cesium.Math.lerp(previousHpr.range, hpr.range, interpolationFactor)
+    //     );
+
+    //     $MAP_VIEWER.camera.lookAt(
+    //         interpolatedPosition,
+    //         interpolatedHpr
+    //     );
+
+    //     // Updating previous positions and hpr
+    //     previousPosition = interpolatedPosition;
+    //     previousHpr = interpolatedHpr;
+
+    //     workTailView = requestAnimationFrame(tailView);
+    // }
+
+    // function FPVView() {
+    //     var dronePosition = Cesium.Cartesian3.fromDegrees(
+    //         droneStatus.lng,
+    //         droneStatus.lat,
+    //         droneStatus.calSLAlt
+    //     );
+
+    //     var hpr = new Cesium.HeadingPitchRoll(
+    //         Cesium.Math.toRadians(droneStatus.yaw),
+    //         Cesium.Math.toRadians(droneStatus.pitch),
+    //         Cesium.Math.toRadians(droneStatus.roll)
+    //     );
+
+    //     if (!previousPosition) {
+    //         previousPosition = dronePosition;
+    //     }
+    //     if (!previousHpr) {
+    //         previousHpr = hpr;
+    //     }
+
+    //     // Using a smaller interpolation factor for smoother transition
+    //     var interpolationFactor = 0.05;
+
+    //     // Interpolating positions and hpr for smooth transition
+    //     var interpolatedPosition = Cesium.Cartesian3.lerp(previousPosition, dronePosition, interpolationFactor, new Cesium.Cartesian3());
+    //     var interpolatedHpr = new Cesium.HeadingPitchRoll(
+    //         Cesium.Math.lerp(previousHpr.heading, hpr.heading, interpolationFactor),
+    //         Cesium.Math.lerp(previousHpr.pitch, hpr.pitch, interpolationFactor),
+    //         Cesium.Math.lerp(previousHpr.roll, hpr.roll, interpolationFactor)
+    //     );
+
+    //     // Setting the camera to the interpolated position and orientation
+    //     $MAP_VIEWER.camera.setView({
+    //         destination: interpolatedPosition,
+    //         orientation: {
+    //             heading: interpolatedHpr.heading,
+    //             pitch: interpolatedHpr.pitch,
+    //             roll: interpolatedHpr.roll
+    //         }
+    //     });
+
+    //     // Updating previous positions and hpr
+    //     previousPosition = interpolatedPosition;
+    //     previousHpr = interpolatedHpr;
+
+    //     workFPVView = requestAnimationFrame(FPVView);
+    // }
+
+    function FPVView() {
         // 드론의 수직 위치에서 20미터 위를 계산
         var cameraPosition = Cesium.Cartesian3.fromDegrees(
             droneStatus.lng,
             droneStatus.lat,
-            droneStatus.slAlt, // 드론 위치 + 20미터
+            parseFloat(droneStatus.slAlt) + $DRONE_ALTITUDE_OFFSET,
         );
 
         // 드론의 현재 위치를 바라보는 카메라의 orientation 계산
         var hpr = new Cesium.HeadingPitchRange(
             Cesium.Math.toRadians(droneStatus.yaw),
             droneStatus.pitch,
-            10, // 10미터 뒤에서 드론을 바라봄
+            droneStatus.roll, // 10미터 뒤에서 드론을 바라봄
         );
 
         $MAP_VIEWER.camera.flyTo({
             destination: cameraPosition, // 수정된 카메라 위치
             orientation: hpr,
-            duration: 1,
+            duration: 0.3,
             easingFunction: Cesium.EasingFunction.LINEAR_NONE,
         });
     }
@@ -667,13 +796,25 @@
                 <div class="container p-0">
                     <div class="row g-1">
                         <div class="col">
-                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={verticalView}>위에서 보기</button>
+{#if doVerticalView === true}
+                            <button type="button" class="btn btn-secondary" style="width:100%;background-color:red;" on:click={changeDoVerticalView}>위에서 보기</button>
+{:else}
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={changeDoVerticalView}>위에서 보기</button>
+{/if}
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={tailView}>뒤에서 보기</button>
+{#if doTailView === true}
+                            <button type="button" class="btn btn-secondary" style="width:100%;background-color:red" on:click={changeDoTailView}>뒤에서 보기</button>
+{:else}
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={changeDoTailView}>뒤에서 보기</button>
+{/if}
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={fpvView}>FPV 시점</button>
+{#if doFPVView === true}
+                            <button type="button" class="btn btn-secondary" style="width:100%;background-color:red" on:click={changeDoFPVView}>FPV 시점</button>
+{:else}
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={changeDoFPVView}>FPV 시점</button>
+{/if}
                         </div>
                     </div>
                 </div>
