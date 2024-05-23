@@ -750,52 +750,6 @@
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={() => changeFlightMode("GUIDED")}>자동비행중지</button>
                         </div>
                     </div>
-                    <div class="row g-1" style="margin-top:5px">
-                        <div class="container" style="border:1px solid rgba(150,150,150,0.8); border-radius:5px;">
-                            <div class="row">
-                                <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
-                                    <div class="container">
-                                        <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
-                                            <div class="col">고도타입</div>
-                                        </div>
-                                        <div class="row" style="padding:5px 0 5px 0">
-                                            <div class="col">
-                                                <select id="missionAltType" style="width:100%;height:100%" bind:value={missionAltType}>
-                                                    <option value="relative" selected>relative</option>
-                                                    <option value="absolute">absolute</option>
-                                                    <option value="terrain">terrain</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
-                                    <div class="container">
-                                        <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
-                                            <div class="col">임무고도</div>
-                                        </div>
-                                        <div class="row" style="padding:5px 0 5px 0">
-                                            <div class="col">
-                                                <input type="number" bind:value={missionAlt} placeholder="임무고도" style="width:100%;height:100%">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col g-0" style="border-right:1px solid rgba(150,150,150,0.8);">
-                                    <div class="container">
-                                        <div class="row" style="background:rgba(50,50,50,0.8);padding:3px 0 3px 0;">
-                                            <div class="col">인정범위</div>
-                                        </div>
-                                        <div class="row" style="padding:5px 0 5px 0">
-                                            <div class="col">
-                                                <input type="number" bind:value={missionRadius} placeholder="인정범위" style="width:100%;height:100%">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -803,49 +757,69 @@
     <Message droneID={droneID} />
 
 {#if planningMode === true}
-    <div class="footer black-translucent-bg" id="list-command" style="height: 200px;padding-top:10px">
-        <div class="table-responsive d-flex justify-content-center">
-            <table class="table" style="width:80%">
-              <thead>
-                <tr>
-                    <th class="align-middle p-0 gray-translucent-bg" style="width:8%;">No</th>
-                    <th class="align-middle p-0 gray-translucent-bg">Commnad</th>
-                    <th class="align-middle p-0 gray-translucent-bg">Delay</th>
-                    <th class="align-middle p-0 gray-translucent-bg">Latitude</th>
-                    <th class="align-middle p-0 gray-translucent-bg">Longitude</th>
-                    <th class="align-middle p-0 gray-translucent-bg">altitude</th>
-                    <th class="align-middle p-0 gray-translucent-bg">고도타입</th>
-                    <th class="align-middle p-0 gray-translucent-bg">삭제</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- 반복되는 행들 -->
-{#each commands as command, index}
-                <tr>
-                    <td class="align-middle p-0 black-translucent-bg" style="width:8%;">{index+1}</td>
-                    <td class="align-middle p-0 black-translucent-bg">
-                        <select name="command" style="width:100%;height:100%" bind:value={command.command}>
-                            <option value="waypoint" selected>waypoint</option>
-                            <option value="land">land</option>
-                        </select>
-                    </td>
-                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay} style="width:50px;"></td>
-                    <td class="align-middle p-0 black-translucent-bg">{command.latitude}</td>
-                    <td class="align-middle p-0 black-translucent-bg">{command.longitude}</td>
-                    <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude} on:keyup={handleChangeCommand} style="width:50px;"></td>
-                    <td class="align-middle p-0 black-translucent-bg">
-                        <select name="altitudeType" style="width:100%;height:100%" bind:value={command.altitudeType}>
-                            <option value="relative" selected>relative</option>
-                            <option value="absolute">absolute</option>
-                            <option value="terrain">terrain</option>
-                        </select>
-                    </td>
-                    <td class="align-middle p-0 black-translucent-bg"><button type="button" class="btn btn-secondary" on:click={() => delCommand(index)}>삭제</button></td>
-                </tr>
-{/each}
-                <!-- 추가 행들 -->
-              </tbody>
-            </table>
+    <div class="footer black-translucent-bg" id="list-command" style="height: 200px;">
+        <div class="container-fluid" style="height:100%">
+            <div class="row">
+                <div class="col" style="margin-bottom:10px;">
+                    <span>고도타입</span>
+                    <select id="missionAltType" bind:value={missionAltType}>
+                        <option value="relative" selected>relative</option>
+                        <option value="absolute">absolute</option>
+                        <option value="terrain">terrain</option>
+                    </select>
+                    <span style="margin-left:10px;">임무고도</span>
+                    <input type="number" bind:value={missionAlt} placeholder="임무고도" style="width:50px;">
+                    <span style="margin-left:10px;">인정범위</span>
+                    <input type="number" bind:value={missionRadius} placeholder="인정범위" style="width:50px;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="table-responsive d-flex justify-content-center">
+                        <table class="table" style="width:100%">
+                          <thead>
+                            <tr>
+                                <th class="align-middle p-0 gray-translucent-bg" style="width:8%;">No</th>
+                                <th class="align-middle p-0 gray-translucent-bg">Commnad</th>
+                                <th class="align-middle p-0 gray-translucent-bg">Delay</th>
+                                <th class="align-middle p-0 gray-translucent-bg">Latitude</th>
+                                <th class="align-middle p-0 gray-translucent-bg">Longitude</th>
+                                <th class="align-middle p-0 gray-translucent-bg">altitude</th>
+                                <th class="align-middle p-0 gray-translucent-bg">고도타입</th>
+                                <th class="align-middle p-0 gray-translucent-bg">삭제</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <!-- 반복되는 행들 -->
+            {#each commands as command, index}
+                            <tr>
+                                <td class="align-middle p-0 black-translucent-bg" style="width:8%;">{index+1}</td>
+                                <td class="align-middle p-0 black-translucent-bg">
+                                    <select name="command" style="width:100%;height:100%" bind:value={command.command}>
+                                        <option value="waypoint" selected>waypoint</option>
+                                        <option value="land">land</option>
+                                    </select>
+                                </td>
+                                <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay} style="width:50px;"></td>
+                                <td class="align-middle p-0 black-translucent-bg">{command.latitude}</td>
+                                <td class="align-middle p-0 black-translucent-bg">{command.longitude}</td>
+                                <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude} on:keyup={handleChangeCommand} style="width:50px;"></td>
+                                <td class="align-middle p-0 black-translucent-bg">
+                                    <select name="altitudeType" style="width:100%;height:100%" bind:value={command.altitudeType}>
+                                        <option value="relative" selected>relative</option>
+                                        <option value="absolute">absolute</option>
+                                        <option value="terrain">terrain</option>
+                                    </select>
+                                </td>
+                                <td class="align-middle p-0 black-translucent-bg"><button type="button" class="btn btn-secondary" on:click={() => delCommand(index)}>삭제</button></td>
+                            </tr>
+            {/each}
+                            <!-- 추가 행들 -->
+                          </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {/if}
@@ -857,7 +831,7 @@
 .footer {
     position: fixed; /* 고정 위치 지정 */
     bottom: 10px; /* 하단에 위치 */
-    margin-left: 10px;
+    left:10px;
     right: 420px;
     background-color: #f8f9fa; /* 배경 색상 */
     text-align: center; /* 텍스트 가운데 정렬 */
