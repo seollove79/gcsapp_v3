@@ -871,6 +871,8 @@
 {/if}
 
 <style>
+* {font-size:0.96em;}
+
 .footer {
     position: fixed; /* 고정 위치 지정 */
     bottom: 10px; /* 하단에 위치 */
@@ -911,5 +913,7 @@
 .table-responsive thead {
   width: calc(100% - 1em); /* 스크롤바 너비 조정 */
 }
+
+th {font-size:1em;}
 </style>
 

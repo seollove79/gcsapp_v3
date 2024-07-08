@@ -142,8 +142,7 @@
                         width="35"
                         height="35"
                         alt="drone icon"
-                    />
-                    <p style="margin-top:5px">드론추가</p>
+                    /><p style="margin:5px 0 0 0;padding:0;font-size:0.7em">드론추가</p>
                 </button>
             </div>
         </div>
@@ -166,11 +165,11 @@
             <div class="container">
                 <div
                     class="row"
-                    style="height:30px;background:rgba(0,0,0,0.5);color:white"
+                    style="height:40px;background:rgba(0,0,0,0.5);color:white"
                 >
                     <div
                         class="col-11 my-auto"
-                        style="font-size:1.2em;text-align:center"
+                        style="text-align:center"
                     >
                         드론 연결 정보
                     </div>
@@ -183,7 +182,6 @@
                             style="background-color:black;border:0"
                             ><i
                                 class="bi bi-x-square-fill"
-                                style="font-size:1.4em;"
                             ></i></button
                         >
                     </div>
@@ -272,6 +270,10 @@
 </div>
 
 <style>
+    * {
+        font-size:1em;
+    }
+
     .manage-drone-layer {
         position: fixed; /* 고정된 위치 */
         top: 60px; /* 상단에서 0px의 위치 */
@@ -295,6 +297,5 @@
         background: black;
         border: 0;
         color: white;
-        font-size: 1em;
     }
 </style>

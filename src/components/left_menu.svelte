@@ -69,14 +69,8 @@ function stopAuto() {
     text-align:center
 }
 
-.gray-translucent-bg {
-    color:white;
-    background:rgba(50,50,50,0.8);
-    padding:3px;
-    text-align:center;
-}
-
 button {
+    font-size:0.9em;
     width:100%;
 }
 </style>
