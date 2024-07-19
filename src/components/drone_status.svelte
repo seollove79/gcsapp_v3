@@ -287,7 +287,7 @@
                 },
                 label: {
                     text: droneID,
-                    font: "14px sans-serif",
+                    font: "20px sans-serif",
                     style: Cesium.LabelStyle.FILL_AND_OUTLINE,
                     fillColor: Cesium.Color.WHITE,
                     outlineColor: Cesium.Color.BLACK,
