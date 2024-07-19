@@ -49,3 +49,24 @@ export const SL_ALT_OFFSET = writable(slAltOffset)
 
 let drones = [];
 export const DRONES = writable(drones)
+
+let fieldLocations = [
+    {latitude : 38.0803178, longitude : 127.3499334},
+    {latitude : 38.0802281, longitude : 127.3516225},
+    {latitude : 38.0801809, longitude : 127.3533408},
+    {latitude : 38.0801195, longitude : 127.3551676},
+    {latitude : 38.0800907, longitude : 127.3566067},
+    {latitude : 38.0799749, longitude : 127.3581531},
+];
+export const FIELD_LOCATIONS = writable(fieldLocations)
+
+
+let groupLocations = [
+    {latitude : 38.0729230, longitude : 127.3503082},
+    {latitude : 38.0727968, longitude : 127.3520230},
+    {latitude : 38.0726963, longitude : 127.3534542},
+    {latitude : 38.0726890, longitude : 127.3550678},
+    {latitude : 38.0727409, longitude : 127.3565935},
+    {latitude : 38.0728196, longitude : 127.3579571},
+];
+export const GROUP_LOCATIONS = writable(groupLocations)

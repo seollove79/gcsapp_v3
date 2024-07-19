@@ -14,6 +14,7 @@
         API_CALL_INTERVAL,
         DRONE_ALTITUDE_OFFSET,
         SHOW_TAKEOFF_INFO,
+        SELECTED_DRONE,
     } from "../store";
     export let droneID;
     let showStatus = false;
@@ -281,7 +282,7 @@
                     droneStatus.calSLAlt + $DRONE_ALTITUDE_OFFSET,
                 ), // 드론의 초기 위치 (경도, 위도, 높이)
                 model: {
-                    uri: "/scene.gltf",
+                    uri: "/drone.glb",
                     scale: $DRONE_MODEL_SCALE,
                 },
                 label: {
@@ -626,6 +627,42 @@
         commands = commands;
         drawWaypoint();
     }
+
+    // 지도상의 특정 오브젝트를 클릭했을 때 오브젝트의 좌표와 고도를 가져오는 함수
+    $MAP_VIEWER.screenSpaceEventHandler.setInputAction(function onLeftClick(movement) {
+        let pickedObject = $MAP_VIEWER.scene.pick(movement.position);
+        if (Cesium.defined(pickedObject)) {
+            // object의 아이디  가져오기
+            let cartesian = $MAP_VIEWER.scene.pickPosition(movement.position);
+            let cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+            let targetLng = Cesium.Math.toDegrees(cartographic.longitude);
+            let targetLat = Cesium.Math.toDegrees(cartographic.latitude);
+            console.log(targetLng, targetLat);
+
+            let go = confirm("목표물을 타격 하시겠습니까?");
+            if (go) {
+                fetch($DRONEKIT_API + "goto_location/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        drone_id: $SELECTED_DRONE,
+                        latitude: parseFloat(targetLat),
+                        longitude: parseFloat(targetLng),
+                        // altitude: parseFloat(guideAlt),
+                        altitude: 0,
+                        method: 'relative',
+                    }),
+                })
+
+            }
+        }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    
+
+
+    
 </script>
 
 {#if showStatus === true}
@@ -784,7 +821,8 @@
                     </div>
                     <div class="row g-1" style="margin-top:0px">
                         <div class="col">
-                            <button type="button" class="btn btn-secondary" style="width:100%;" on:click={downloadMission} id="btnChangePlanningMode">읽어오기</button>
+                            <button type="button" class="btn btn-secondary" 
+                            style="width:100%;" on:click={downloadMission} id="btnChangePlanningMode">읽어오기</button>
                         </div>
                         <div class="col">
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={sendCommands}>화면초기화</button>

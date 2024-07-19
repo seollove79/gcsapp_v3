@@ -50,6 +50,8 @@
             return;
         }
 
+        let connectionString = formData.connectType + ":" + formData.IPAddress + ":" + formData.port;
+
         try {
             const response = await fetch($DRONEKIT_API + "connect_drone", {
                 method: "POST",
@@ -57,12 +59,7 @@
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    connection_string:
-                        formData.connectType +
-                        ":" +
-                        formData.IPAddress +
-                        ":" +
-                        formData.port,
+                    connection_string: connectionString,
                     drone_id: formData.droneID,
                 }),
             });
@@ -74,13 +71,13 @@
             const data = await response.json();
             if (data.status === "Connected") {
                 alert("드론이 연결되었습니다.");
-                addDrone(formData.droneID);
+                addDrone(formData.droneID, connectionString);
                 closeModal();
             }
 
             if (data.status === "Already Connected") {
                 alert("이미 연결되어 있습니다.");
-                addDrone(formData.droneID);
+                addDrone(formData.droneID, connectionString);
                 closeModal();
             }
 
@@ -95,11 +92,12 @@
         }
     }
 
-    function addDrone(droneID) {
-        if (!$DRONES.some(drone => drone.droneID === droneID)) {
+    function addDrone(droneID,connectionString) {
+        if (!$DRONES.some(drone => drone.droneID === droneID) && !$DRONES.some(drone => drone.connectionString === connectionString)) {
             $DRONES.push(
                 {
                     droneID: droneID,
+                    connectionString : connectionString,
                     droneLabel: null,
                     droneStatus: null,
                 },
