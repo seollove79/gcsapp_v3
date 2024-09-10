@@ -628,6 +628,27 @@
         drawWaypoint();
     }
 
+    async function disconnect() {
+        console.log("disconnect");
+        try {
+            const response = await fetch($DRONEKIT_API + "disconnect_drone/" + encodeURIComponent(droneID), {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("서버 에러: " + response.statusText);
+            }
+
+            const data = await response.json();
+        } catch (error) {
+            console.error("Error:", error);
+        } finally {
+        }
+    }
+
     // 지도상의 특정 오브젝트를 클릭했을 때 오브젝트의 좌표와 고도를 가져오는 함수
     $MAP_VIEWER.screenSpaceEventHandler.setInputAction(function onLeftClick(movement) {
         let pickedObject = $MAP_VIEWER.scene.pick(movement.position);
@@ -769,6 +790,13 @@
             </div>
             <div class="row black-translucent-bg">
                 <div class="container p-0">
+                    <div class="row g-1">
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary" style="width:100%" on:click={disconnect}>연결종료</button>
+                        </div>
+                        <div class="col"></div>
+                        <div class="col"></div>
+                    </div>
                     <div class="row g-1">
                         <div class="col">
                             <button type="button" class="btn btn-secondary" style="width:100%" on:click={armOrDisarmDrone}>시동/종료</button>

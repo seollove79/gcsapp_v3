@@ -1,5 +1,6 @@
-import  { writable } from 'svelte/store'
+import  { readable, readonly, writable } from 'svelte/store'
 let apiUrl = "http://127.0.0.1:8000/api/v1/drones/"
+//let apiUrl = "http://192.168.144.208:8000/api/v1/drones/"
 export const DRONEKIT_API = writable(apiUrl)
 
 let mapViewer = null;
@@ -70,3 +71,6 @@ let groupLocations = [
     {latitude : 38.0728196, longitude : 127.3579571},
 ];
 export const GROUP_LOCATIONS = writable(groupLocations)
+
+let connnectType = [{key:"TCP",value:"tcp"}, {key:"직접연결",value:"direct"}, {key:"직접연결(TCP)",value:"direct_tcp"}];
+export const CONNECT_TYPE = readable(connnectType)

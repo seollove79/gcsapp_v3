@@ -2,7 +2,7 @@
 <script>
     import DroneLabel from "./drone_label.svelte";
     import DroneStatus from "./drone_status.svelte";
-    import { DRONEKIT_API, SELECTED_DRONE, SELECTED_DRONE_OBJECT, DRONES } from "../store";
+    import { DRONEKIT_API, SELECTED_DRONE, SELECTED_DRONE_OBJECT, DRONES, CONNECT_TYPE } from "../store";
     import { create_bidirectional_transition } from "svelte/internal";
 
     let modal = null;
@@ -28,16 +28,18 @@
     }
 
     let formData = {
-        connectType: "tcp",
-        droneID: "drone#01",
-        IPAddress: "192.168.0.65",
-        port: "5760",
+        connectType: "",
+        droneID: "",
+        IPAddress: "",
+        IPAddressFC: "",
+        port: "",
     };
 
     async function handleSubmit(e) {
         e.preventDefault();
         modalConnecting = true; // 연결 중 상태로 변경합니다.
         modalError = null; // 오류 상태를 초기화합니다.
+        let connectionString = "";
 
         if (
             !formData.connectType ||
@@ -50,7 +52,15 @@
             return;
         }
 
-        let connectionString = formData.connectType + ":" + formData.IPAddress + ":" + formData.port;
+        if (formData.connectType === "tcp") {
+            connectionString = formData.connectType + ":" + formData.IPAddress + ":" + formData.port;
+        } else if (formData.connectType === "direct") {
+            connectionString = formData.connectType + ":" + formData.port;
+            $DRONEKIT_API = "http://" + formData.IPAddress + ":8000/api/v1/drones/";
+        } else if (formData.connectType === "direct_tcp") {
+            connectionString = "tcp:" + formData.IPAddressFC + ":" + formData.port;
+            $DRONEKIT_API = "http://" + formData.IPAddress + ":8000/api/v1/drones/";
+        }
 
         try {
             const response = await fetch($DRONEKIT_API + "connect_drone", {
@@ -90,6 +100,7 @@
         } finally {
             modalConnecting = false; // 요청이 완료되면 연결 상태를 '완료'로 변경합니다.
         }
+
     }
 
     function addDrone(droneID,connectionString) {
@@ -122,6 +133,16 @@
                 drone.droneLabel.setSelected(false);
             }
         });
+    }
+
+    function changeConnectType(e) {
+        if (e.target.value === "tcp") {
+            formData = { ...formData, connectType: e.target.value, droneID: "drone#01", IPAddress: "192.168.0.65", port: "5760" };
+        } else if (e.target.value === "direct") {
+            formData = { ...formData, connectType: e.target.value, droneID: "drone#01", IPAddress: "192.168.1.51", port: "/dev/ttyS0" };
+        } else if (e.target.value === "direct_tcp") {
+            formData = { ...formData, connectType: e.target.value, droneID: "drone#01", IPAddress: "192.168.1.51", IPAddressFC: "192.168.1.150", port: "5760" };
+        }
     }
 </script>
 
@@ -210,9 +231,12 @@
                                     aria-label="Default select example"
                                     style="margin-bottom:10px;"
                                     bind:value={formData.connectType}
+                                    on:change={changeConnectType}
                                 >
-                                    <option value="" selected>연결방식</option>
-                                    <option value="tcp">TCP</option>
+                                    <option value="" disabled>연결방식</option>
+                        {#each $CONNECT_TYPE as connectType}
+                                    <option value={connectType.value}>{connectType.key}</option>
+                        {/each}
                                 </select>
                                 <input
                                     type="text"
@@ -231,7 +255,16 @@
                                     bind:value={formData.IPAddress}
                                 />
                                 <input
-                                    type="number"
+                                    type="text"
+                                    class="form-control"
+                                    id="IPAddressFC"
+                                    placeholder="IP 주소(FC)"
+                                    style="margin-bottom:10px;"
+                                    disabled={formData.connectType === "direct_tcp" ? false : true}
+                                    bind:value={formData.IPAddressFC}
+                                />
+                                <input
+                                    type="text"
                                     class="form-control"
                                     id="port"
                                     placeholder="포트번호"
