@@ -25,7 +25,12 @@
 <div class="top-layer">
     <div class="container-fluid">
         <div class="row">
-            <div class="col d-flex align-items-center"><i class="bi bi-justify" style="font-size:45px;color:white" on:click={clickMenu}></i> <span style="font-size:20px;margin-left:10px;color:white;">INTOSKY Multipurpose Ground Control Station</span></div>
+            <div class="col d-flex align-items-center">
+                <button style="background:none;border:none;padding:0;" on:click={clickMenu} on:keydown={clickMenu}>
+                    <i class="bi bi-justify" style="font-size:45px;color:white"></i>
+                </button>
+                <span style="font-size:20px;margin-left:10px;color:white;">INTOSKY Multipurpose Ground Control Station</span>
+            </div>
             <div class="col d-flex align-items-center justify-content-end">
                 <div class="input-group" style="width:400px;">
                     <div class="input-group-prepend">
