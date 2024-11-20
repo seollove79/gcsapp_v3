@@ -910,8 +910,8 @@
                                     </select>
                                 </td>
                                 <td class="align-middle p-0 black-translucent-bg"><input type="number" name="delay" bind:value={command.delay} style="width:50px;"></td>
-                                <td class="align-middle p-0 black-translucent-bg">{command.latitude}</td>
-                                <td class="align-middle p-0 black-translucent-bg">{command.longitude}</td>
+                                <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.latitude} on:keyup={handleChangeCommand} style="width:100%;"></td>
+                                <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.longitude} on:keyup={handleChangeCommand} style="width:100%;"></td>
                                 <td class="align-middle p-0 black-translucent-bg"><input type="number" name="altitude" bind:value={command.altitude} on:keyup={handleChangeCommand} style="width:50px;"></td>
                                 <td class="align-middle p-0 black-translucent-bg">
                                     <select name="altitudeType" style="width:100%;height:100%" bind:value={command.altitudeType}>
